@@ -117,16 +117,16 @@
         <div class="flex items-center gap-2 bg-slate-900/80 border border-slate-700/60 rounded-xl px-3 py-1.5">
           <i data-lucide="globe" class="w-4 h-4 text-cyan-400"></i>
           <span class="text-xs text-slate-400">Zona horaria:</span>
-          <select id="timezone-select" class="bg-transparent text-xs font-medium text-white focus:outline-none cursor-pointer">
-            <option value="LOCAL" selected class="bg-slate-900 text-white">Mi hora local (Detectada)</option>
-            <option value="UTC" class="bg-slate-900 text-white">UTC (Hora Oficial OpenCode)</option>
-            <option value="America/Bogota" class="bg-slate-900 text-white">Bogotá / Lima / Quito (UTC-5)</option>
-            <option value="America/Mexico_City" class="bg-slate-900 text-white">Ciudad de México (UTC-6)</option>
-            <option value="America/Argentina/Buenos_Aires" class="bg-slate-900 text-white">Buenos Aires (UTC-3)</option>
-            <option value="America/Santiago" class="bg-slate-900 text-white">Santiago de Chile (UTC-3 / -4)</option>
-            <option value="Europe/Madrid" class="bg-slate-900 text-white">Madrid / Barcelona (UTC+1 / +2)</option>
-            <option value="America/New_York" class="bg-slate-900 text-white">Nueva York / Miami (UTC-4 / -5)</option>
-            <option value="America/Los_Angeles" class="bg-slate-900 text-white">Los Ángeles (UTC-7 / -8)</option>
+          <select id="timezone-select" class="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer">
+            <option value="America/Lima" selected class="bg-slate-900 text-white">🇵🇪 Perú (Lima, UTC-5)</option>
+            <option value="America/Bogota" class="bg-slate-900 text-white">🇨🇴 Colombia / Ecuador (UTC-5)</option>
+            <option value="America/Mexico_City" class="bg-slate-900 text-white">🇲🇽 México (CDMX, UTC-6)</option>
+            <option value="America/Argentina/Buenos_Aires" class="bg-slate-900 text-white">🇦🇷 Argentina (Buenos Aires, UTC-3)</option>
+            <option value="America/Santiago" class="bg-slate-900 text-white">🇨🇱 Chile (Santiago, UTC-3 / -4)</option>
+            <option value="Europe/Madrid" class="bg-slate-900 text-white">🇪🇸 España (Madrid, UTC+1 / +2)</option>
+            <option value="America/New_York" class="bg-slate-900 text-white">🇺🇸 Nueva York / Miami (UTC-4 / -5)</option>
+            <option value="LOCAL" class="bg-slate-900 text-white">🌐 Otra hora local detectada</option>
+            <option value="UTC" class="bg-slate-900 text-white">⏰ UTC (Hora Oficial OpenCode)</option>
           </select>
         </div>
 
@@ -766,18 +766,40 @@
       }
     };
 
-    // Selected timezone handler
-    let selectedTz = 'LOCAL';
+    // Selected timezone handler - Default: America/Lima (Perú)
+    let selectedTz = 'America/Lima';
 
     function getSelectedTimezone() {
       if (selectedTz === 'LOCAL') {
         try {
-          return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+          return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Lima';
         } catch (e) {
-          return 'UTC';
+          return 'America/Lima';
         }
       }
       return selectedTz;
+    }
+
+    function getTimezoneDisplayName(tz) {
+      if (tz === 'America/Lima') return 'Perú (Lima, UTC-5)';
+      if (tz === 'America/Bogota') return 'Colombia (Bogotá, UTC-5)';
+      if (tz === 'America/Mexico_City') return 'México (CDMX, UTC-6)';
+      if (tz === 'America/Argentina/Buenos_Aires') return 'Argentina (Buenos Aires, UTC-3)';
+      if (tz === 'America/Santiago') return 'Chile (Santiago, UTC-3 / -4)';
+      if (tz === 'Europe/Madrid') return 'España (Madrid, UTC+1 / +2)';
+      if (tz === 'America/New_York') return 'Nueva York (UTC-4 / -5)';
+      if (tz === 'UTC') return 'UTC Oficial';
+      return tz;
+    }
+
+    /**
+     * Formats peak ranges highlighting the connector 'y' in distinct amber badge styling
+     */
+    function formatRangesWithSeparator(ranges) {
+      if (!ranges || ranges.length === 0) return '';
+      return ranges
+        .map(r => `<span class="text-rose-400 font-mono font-bold">${r}</span>`)
+        .join('<span class="text-amber-300 font-sans font-extrabold mx-1.5 px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-[11px] shadow-sm tracking-wide">y</span>');
     }
 
     /**
@@ -858,10 +880,10 @@
           hour12: false
         });
         document.getElementById('clock-local').textContent = localFormatter.format(now);
-        document.getElementById('tz-name-label').textContent = activeTz;
+        document.getElementById('tz-name-label').textContent = getTimezoneDisplayName(activeTz);
       } catch (e) {
         document.getElementById('clock-local').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-        document.getElementById('tz-name-label').textContent = 'Local';
+        document.getElementById('tz-name-label').textContent = 'Perú (America/Lima)';
       }
 
       // Update Next change countdown
@@ -1122,8 +1144,9 @@
           }
         }
         ranges.push(`${pad(start)}:00 a ${pad(prev + 1)}:00`);
+        const rangesHtml = formatRangesWithSeparator(ranges);
         convText.innerHTML = 
-          `Horas Peak para <strong>${fullDateStr}</strong> en <strong>${activeTz}</strong>: <span class="text-rose-400 font-mono font-bold">${ranges.join(' y ')}</span> <span class="text-slate-400">(${peakHoursList.length}h Peak, ${24 - peakHoursList.length}h Off-Peak)</span>`;
+          `Horas Peak para <strong>${fullDateStr}</strong> en <strong>${getTimezoneDisplayName(activeTz)}</strong>: ${rangesHtml} <span class="text-slate-400">(${peakHoursList.length}h Peak, ${24 - peakHoursList.length}h Off-Peak)</span>`;
       } else {
         convText.innerHTML = 
           `🎉 <strong class="text-emerald-400">¡${fullDateStr} es 100% OFF-PEAK!</strong> Todo el día cuenta con tarifa reducida del 50% en tokens DeepSeek.`;
@@ -1215,7 +1238,8 @@
             }
           }
           ranges.push(`${pad(start)}:00 a ${pad(prev + 1)}:00`);
-          peakStr = `<span class="text-rose-400 font-mono font-bold">${ranges.join(' y ')}</span> <span class="text-slate-500 text-[11px]">(${peaks.length}h Peak)</span>`;
+          const rangesHtml = formatRangesWithSeparator(ranges);
+          peakStr = `${rangesHtml} <span class="text-slate-500 text-[11px]">(${peaks.length}h Peak)</span>`;
         }
 
         const stateBadge = is100OffPeak 
@@ -1243,7 +1267,7 @@
       });
 
       // Update header with timezone name
-      document.getElementById('th-weekly-local').textContent = `Horario Peak (${activeTz})`;
+      document.getElementById('th-weekly-local').textContent = `Horario Peak (${getTimezoneDisplayName(activeTz)})`;
       
       lucide.createIcons();
     }
