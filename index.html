@@ -170,6 +170,12 @@
           
           <!-- Analog Wall Clock (Inspirado en relojoriginal.jpg) -->
           <div class="relative flex-shrink-0 flex flex-col items-center">
+            <!-- Título fuera del reloj arriba -->
+            <div class="mb-2.5 text-center">
+              <span class="text-xs font-black uppercase tracking-widest text-slate-100 block">DEEPSEEK • RELOJ 12H</span>
+              <span id="clock-header-tz" class="text-xs font-semibold text-cyan-400 block">Perú (Lima, UTC-5)</span>
+            </div>
+
             <div class="relative p-2 rounded-full bg-gradient-to-br from-slate-300 via-slate-100 to-slate-400 p-[3px] shadow-[0_20px_45px_rgba(0,0,0,0.7)] ring-2 ring-slate-400/50">
               <svg id="wall-clock-svg" width="250" height="250" viewBox="0 0 320 320" class="select-none filter drop-shadow-lg rounded-full">
                 <defs>
@@ -189,14 +195,6 @@
                     <stop offset="85%" stop-color="#f8fafc" />
                     <stop offset="100%" stop-color="#e2e8f0" />
                   </radialGradient>
-
-                  <!-- Filter for realistic drop shadows -->
-                  <filter id="handShadow" x="-30%" y="-30%" width="160%" height="160%">
-                    <feDropShadow dx="1.5" dy="2.5" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.35" />
-                  </filter>
-                  <filter id="centerShadow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.45" />
-                  </filter>
                 </defs>
 
                 <!-- Brushed Silver/Aluminum Outer Bezel -->
@@ -210,15 +208,10 @@
                 <!-- Shaded 12h Sectors (Peak Red / Off-Peak Green as in relojoriginal.jpg) -->
                 <g id="clock-segments-group"></g>
 
-                <!-- Minute and Hour Ticks (Palos y marcas del reloj en negro sólido) -->
+                <!-- Hour Ticks (Solo las 12 marcas de las horas en negro sólido, sin rayitas intermedias) -->
                 <g id="clock-ticks-group"></g>
 
-                <!-- Brand and Timezone Label on dial -->
-                <text x="160" y="90" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="800" fill="#475569" letter-spacing="2">DEEPSEEK</text>
-                <text x="160" y="100" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="6.5" font-weight="600" fill="#94a3b8" letter-spacing="1">WALL CLOCK • 12H</text>
-                <text x="160" y="222" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="800" fill="#0284c7" id="clock-face-tz">PERÚ (UTC-5)</text>
-
-                <!-- Hands Layer (Horario y minutero negros sólidos de alta visibilidad) -->
+                <!-- Hands Layer (Horario, minutero y segundero negros sólidos) -->
                 <g id="clock-hands-layer">
                   <!-- Horario (Hour hand - negro sólido y ancho) -->
                   <g id="clock-hand-hour">
@@ -232,10 +225,10 @@
                     <circle cx="160" cy="160" r="4.5" fill="#000000" />
                   </g>
 
-                  <!-- Segundero (Second hand - aguja roja con contrapeso) -->
+                  <!-- Segundero (Second hand - aguja negra fina con contrapeso) -->
                   <g id="clock-hand-second-group">
-                    <line x1="160" y1="186" x2="160" y2="28" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" />
-                    <circle cx="160" cy="186" r="3.5" fill="#dc2626" />
+                    <line x1="160" y1="186" x2="160" y2="28" stroke="#000000" stroke-width="1.6" stroke-linecap="round" />
+                    <circle cx="160" cy="186" r="3.5" fill="#000000" />
                   </g>
                 </g>
 
@@ -1282,12 +1275,11 @@
         gSegments.appendChild(path);
       }
 
-      // Draw 60 Minute Ticks (all solid black marks - "palos del reloj en negro")
-      for (let m = 0; m < 60; m++) {
-        const angle = m * 6;
-        const isMajor = (m % 5 === 0);
+      // Draw ONLY the 12 Hour Ticks (sin rayitas intermedias entre cada hora)
+      for (let h = 0; h < 12; h++) {
+        const angle = h * 30;
         const rOuterTick = 140;
-        const rInnerTick = isMajor ? 127 : 133;
+        const rInnerTick = 127;
         const p1 = polarToCartesian(cx, cy, rOuterTick, angle);
         const p2 = polarToCartesian(cx, cy, rInnerTick, angle);
 
@@ -1297,7 +1289,7 @@
         tickLine.setAttribute('x2', p2.x.toFixed(2));
         tickLine.setAttribute('y2', p2.y.toFixed(2));
         tickLine.setAttribute('stroke', '#000000');
-        tickLine.setAttribute('stroke-width', isMajor ? '3.2' : '1.3');
+        tickLine.setAttribute('stroke-width', '3.5');
         tickLine.setAttribute('stroke-linecap', 'round');
         gTicks.appendChild(tickLine);
       }
@@ -1325,10 +1317,10 @@
         }
       }
 
-      // Update center dial text
-      const faceTz = document.getElementById('clock-face-tz');
-      if (faceTz) {
-        faceTz.textContent = activeTz === 'America/Lima' ? 'PERÚ (UTC-5)' : activeTz.split('/').pop().toUpperCase().replace(/_/g, ' ');
+      // Update header title outside the clock
+      const headerTz = document.getElementById('clock-header-tz');
+      if (headerTz) {
+        headerTz.textContent = getTimezoneDisplayName(activeTz);
       }
     }
 
