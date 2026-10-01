@@ -210,32 +210,45 @@
                 <!-- Shaded 12h Sectors (Peak Red / Off-Peak Green as in relojoriginal.jpg) -->
                 <g id="clock-segments-group"></g>
 
-                <!-- Ticks and 1-12 Hour Numerals -->
+                <!-- Minute and Hour Ticks (Palos y marcas del reloj en negro sólido) -->
                 <g id="clock-ticks-group"></g>
 
                 <!-- Brand and Timezone Label on dial -->
-                <text x="160" y="88" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="800" fill="#475569" letter-spacing="2">DEEPSEEK</text>
-                <text x="160" y="98" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="6.5" font-weight="600" fill="#94a3b8" letter-spacing="1">WALL CLOCK • 12H</text>
-                <text x="160" y="224" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="800" fill="#0284c7" id="clock-face-tz">PERÚ (UTC-5)</text>
+                <text x="160" y="90" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="800" fill="#475569" letter-spacing="2">DEEPSEEK</text>
+                <text x="160" y="100" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="6.5" font-weight="600" fill="#94a3b8" letter-spacing="1">WALL CLOCK • 12H</text>
+                <text x="160" y="222" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="800" fill="#0284c7" id="clock-face-tz">PERÚ (UTC-5)</text>
 
-                <!-- Hands -->
-                <!-- Hour hand (12h format) -->
-                <line id="clock-hand-hour" x1="160" y1="160" x2="160" y2="92" stroke="#0f172a" stroke-width="5" stroke-linecap="round" filter="url(#handShadow)" />
-                <!-- Minute hand -->
-                <line id="clock-hand-minute" x1="160" y1="160" x2="160" y2="48" stroke="#1e293b" stroke-width="3" stroke-linecap="round" filter="url(#handShadow)" />
-                <!-- Second hand -->
-                <g id="clock-hand-second-group" filter="url(#handShadow)">
-                  <line x1="160" y1="184" x2="160" y2="34" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round" />
-                  <circle cx="160" cy="184" r="3.5" fill="#dc2626" />
+                <!-- Hands Layer (Horario y minutero negros sólidos de alta visibilidad) -->
+                <g id="clock-hands-layer">
+                  <!-- Horario (Hour hand - negro sólido y ancho) -->
+                  <g id="clock-hand-hour">
+                    <polygon points="156,170 157,95 160,86 163,95 164,170" fill="#000000" stroke="#000000" stroke-width="0.5" />
+                    <circle cx="160" cy="160" r="5" fill="#000000" />
+                  </g>
+
+                  <!-- Minutero (Minute hand - negro sólido, largo y estilizado) -->
+                  <g id="clock-hand-minute">
+                    <polygon points="157.5,172 158.5,50 160,38 161.5,50 162.5,172" fill="#000000" stroke="#000000" stroke-width="0.5" />
+                    <circle cx="160" cy="160" r="4.5" fill="#000000" />
+                  </g>
+
+                  <!-- Segundero (Second hand - aguja roja con contrapeso) -->
+                  <g id="clock-hand-second-group">
+                    <line x1="160" y1="186" x2="160" y2="28" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" />
+                    <circle cx="160" cy="186" r="3.5" fill="#dc2626" />
+                  </g>
                 </g>
+
+                <!-- 1-12 Hour Numerals Layer (Por encima de sectores y manecillas con halo blanco) -->
+                <g id="clock-numerals-group"></g>
 
                 <!-- Center Status Indicator Circle ("circulito al centro que si estamos en peak sea rojo y si no verde") -->
                 <g id="clock-center-group">
-                  <circle id="clock-center-glow" cx="160" cy="160" r="17" fill="none" stroke="#22c55e" stroke-width="3" opacity="0.6" class="animate-pulse" />
-                  <circle id="clock-center-dot" cx="160" cy="160" r="12" fill="#22c55e" stroke="#ffffff" stroke-width="2.5" filter="url(#centerShadow)" />
+                  <circle id="clock-center-glow" cx="160" cy="160" r="18" fill="none" stroke="#22c55e" stroke-width="3" opacity="0.7" class="animate-pulse" />
+                  <circle id="clock-center-dot" cx="160" cy="160" r="13" fill="#22c55e" stroke="#ffffff" stroke-width="2.5" />
                   <!-- Center pivot metallic pin -->
                   <circle cx="156.5" cy="156.5" r="3.5" fill="rgba(255,255,255,0.7)" />
-                  <circle cx="160" cy="160" r="4" fill="#0f172a" stroke="#ffffff" stroke-width="0.8" />
+                  <circle cx="160" cy="160" r="4" fill="#000000" stroke="#ffffff" stroke-width="0.8" />
                 </g>
               </svg>
             </div>
@@ -1207,16 +1220,18 @@
      * Directly inspired by relojoriginal.jpg:
      * - Silver/brushed bezel with white dial face.
      * - Pie wedges shaded in coral RED for Peak hours and vibrant GREEN for Off-Peak.
-     * - Numerals 1 to 12 positioned around the face.
-     * - 60 precision minute tick marks.
+     * - Numerals 1 to 12 positioned around the face (ON TOP of everything with crisp white halo).
+     * - 60 precision minute tick marks in solid black.
      */
     function drawWallClockSegments() {
       const gSegments = document.getElementById('clock-segments-group');
       const gTicks = document.getElementById('clock-ticks-group');
+      const gNumerals = document.getElementById('clock-numerals-group');
       if (!gSegments || !gTicks) return;
 
       gSegments.innerHTML = '';
       gTicks.innerHTML = '';
+      if (gNumerals) gNumerals.innerHTML = '';
 
       const activeTz = getSelectedTimezone();
       const now = new Date();
@@ -1241,8 +1256,6 @@
       const rOuter = 141, rInner = 16;
 
       // 12 sectors for the 12 hours of the clock face (1 to 12)
-      // h = 0 is 12:00 to 01:00 (angles 0 to 30 deg)
-      // h = 1 is 01:00 to 02:00 (angles 30 to 60 deg) ...
       // In 12h clock, sector h is Peak if either AM (h) or PM (h+12) is Peak on this date in activeTz
       for (let h = 0; h < 12; h++) {
         const isPeakAM = isHourPeakOnDate(year, month, day, h, activeTz);
@@ -1255,7 +1268,7 @@
         const pathD = describeArc(cx, cy, rInner, rOuter, startAngle, endAngle);
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('d', pathD);
-        path.setAttribute('fill', isPeak ? 'rgba(239, 68, 68, 0.42)' : 'rgba(34, 197, 94, 0.32)');
+        path.setAttribute('fill', isPeak ? 'rgba(239, 68, 68, 0.45)' : 'rgba(34, 197, 94, 0.35)');
         path.setAttribute('stroke', isPeak ? '#dc2626' : '#16a34a');
         path.setAttribute('stroke-width', '1.2');
         path.setAttribute('class', 'transition-all duration-300 hover:opacity-85 cursor-pointer');
@@ -1269,12 +1282,12 @@
         gSegments.appendChild(path);
       }
 
-      // Draw 60 Minute Ticks (Major ticks every 5 min)
+      // Draw 60 Minute Ticks (all solid black marks - "palos del reloj en negro")
       for (let m = 0; m < 60; m++) {
         const angle = m * 6;
         const isMajor = (m % 5 === 0);
         const rOuterTick = 140;
-        const rInnerTick = isMajor ? 128 : 134;
+        const rInnerTick = isMajor ? 127 : 133;
         const p1 = polarToCartesian(cx, cy, rOuterTick, angle);
         const p2 = polarToCartesian(cx, cy, rInnerTick, angle);
 
@@ -1283,27 +1296,33 @@
         tickLine.setAttribute('y1', p1.y.toFixed(2));
         tickLine.setAttribute('x2', p2.x.toFixed(2));
         tickLine.setAttribute('y2', p2.y.toFixed(2));
-        tickLine.setAttribute('stroke', isMajor ? '#0f172a' : '#64748b');
-        tickLine.setAttribute('stroke-width', isMajor ? '2.5' : '1');
+        tickLine.setAttribute('stroke', '#000000');
+        tickLine.setAttribute('stroke-width', isMajor ? '3.2' : '1.3');
         tickLine.setAttribute('stroke-linecap', 'round');
         gTicks.appendChild(tickLine);
       }
 
-      // Draw 12 Hour Numerals (1 through 12)
-      const numRadius = 110;
-      for (let n = 1; n <= 12; n++) {
-        const angle = n * 30;
-        const pos = polarToCartesian(cx, cy, numRadius, angle);
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', pos.x.toFixed(1));
-        text.setAttribute('y', (pos.y + 5).toFixed(1)); // Vertical optical alignment
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('font-family', "'Plus Jakarta Sans', sans-serif");
-        text.setAttribute('font-size', '15');
-        text.setAttribute('font-weight', '800');
-        text.setAttribute('fill', '#0f172a');
-        text.textContent = n.toString();
-        gTicks.appendChild(text);
+      // Draw 12 Hour Numerals (Strictly ON TOP with crisp white halo and bold black font)
+      if (gNumerals) {
+        const numRadius = 110;
+        for (let n = 1; n <= 12; n++) {
+          const angle = n * 30;
+          const pos = polarToCartesian(cx, cy, numRadius, angle);
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', pos.x.toFixed(1));
+          text.setAttribute('y', (pos.y + 6).toFixed(1)); // Vertical optical alignment
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('font-family', "'Plus Jakarta Sans', sans-serif");
+          text.setAttribute('font-size', '17');
+          text.setAttribute('font-weight', '900');
+          text.setAttribute('fill', '#000000');
+          text.setAttribute('stroke', '#ffffff');
+          text.setAttribute('stroke-width', '3');
+          text.setAttribute('paint-order', 'stroke fill');
+          text.setAttribute('stroke-linejoin', 'round');
+          text.textContent = n.toString();
+          gNumerals.appendChild(text);
+        }
       }
 
       // Update center dial text
@@ -1399,14 +1418,14 @@
             statusIconWrap.innerHTML = `<i data-lucide="zap" class="w-4 h-4 text-rose-400"></i>`;
             statusLabel.className = "text-xs font-bold uppercase tracking-wider text-rose-300";
             statusLabel.textContent = "Centro en ROJO (Peak Activo)";
-            statusSub.innerHTML = `Reloj marca las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-rose-400 font-bold">ROJO</strong> dentro del sector Peak (tarifa estándar).`;
+            statusSub.innerHTML = `Horario y minutero marcan las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-rose-400 font-bold">ROJO</strong> dentro del sector Peak (tarifa estándar).`;
           } else {
             statusBox.className = "rounded-xl p-3.5 border border-emerald-500/30 bg-emerald-950/25 text-xs transition-all duration-300 flex items-start gap-3 shadow-inner";
             statusIconWrap.className = "p-2 rounded-lg mt-0.5 bg-emerald-500/20 text-emerald-400";
             statusIconWrap.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>`;
             statusLabel.className = "text-xs font-bold uppercase tracking-wider text-emerald-300";
             statusLabel.textContent = "Centro en VERDE (Off-Peak Activo)";
-            statusSub.innerHTML = `Reloj marca las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-emerald-400 font-bold">VERDE</strong> dentro del sector Off-Peak (50% de descuento).`;
+            statusSub.innerHTML = `Horario y minutero marcan las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-emerald-400 font-bold">VERDE</strong> dentro del sector Off-Peak (50% de descuento).`;
           }
           lucide.createIcons();
         }
