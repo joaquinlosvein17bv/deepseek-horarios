@@ -41,10 +41,10 @@ Precios idénticos para **Go** ($10/mes) y **Go Plus** ($40/mes):
 
 ## ✨ Características de la Aplicación Web
 
-1. **Estado en Tiempo Real**:
-   - Detecta si en el segundo actual te encuentras en horario **Peak** o **Off-Peak**.
-   - Reloj sincronizado en UTC y reloj en tu hora local.
-   - Contador regresivo exacto hacia el próximo cambio de horario.
+1. **Reloj de Pared Analógico 24H y Estado en Tiempo Real**:
+   - Reloj analógico de pared interactivo con dial circular de 24 horas y sectores sombreados en **verde (Off-Peak 50% OFF)** y **rojo (Peak)**.
+   - Agujas horarias (hora, minuto y segundo) sincronizadas en tiempo real que recorren físicamente los sectores del día.
+   - Panel de información con hora oficial local (Perú predeterminado), hora UTC y contador regresivo exacto hacia el próximo cambio de horario.
 
 2. **Conversor Inteligente de Zona Horaria**:
    - Detecta tu hora local automáticamente y traduce las franjas UTC a tu horario local (Bogotá/Lima UTC-5, México UTC-6, Madrid UTC+1/+2, Buenos Aires UTC-3, etc.).

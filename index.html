@@ -165,25 +165,115 @@
           </div>
         </div>
 
-        <!-- Timer & Clocks Grid -->
-        <div class="mt-6 pt-6 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-            <span class="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-1">Hora Local Seleccionada</span>
-            <div id="clock-local" class="font-mono text-lg font-bold text-white">--:--:--</div>
-            <span id="tz-name-label" class="text-[10px] text-slate-500 block truncate">Detectando...</span>
+        <!-- Wall Clock & Time HUD Component -->
+        <div class="mt-6 pt-6 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
+          
+          <!-- Analog Wall Clock (24h Segmented) -->
+          <div class="relative flex-shrink-0 flex flex-col items-center">
+            <div class="relative p-2.5 rounded-full bg-gradient-to-b from-slate-700/60 via-slate-900/90 to-slate-950 border border-slate-700/80 shadow-[0_16px_36px_rgba(0,0,0,0.65)] ring-1 ring-white/10">
+              <svg id="wall-clock-svg" width="240" height="240" viewBox="0 0 320 320" class="select-none filter drop-shadow">
+                <defs>
+                  <radialGradient id="clockDialGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#0f172a" />
+                    <stop offset="85%" stop-color="#090d16" />
+                    <stop offset="100%" stop-color="#020617" />
+                  </radialGradient>
+                  <filter id="handShadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity="0.7" />
+                  </filter>
+                </defs>
+
+                <!-- Bezel & Background -->
+                <circle cx="160" cy="160" r="156" fill="#0f172a" stroke="#334155" stroke-width="4" />
+                <circle cx="160" cy="160" r="150" fill="url(#clockDialGrad)" stroke="#1e293b" stroke-width="1.5" />
+
+                <!-- Segmented Ring (Peak / Off-Peak arcs) -->
+                <g id="clock-segments-group"></g>
+
+                <!-- Ticks and hour marks -->
+                <g id="clock-ticks-group"></g>
+
+                <!-- Brand & Center Text -->
+                <text x="160" y="96" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="700" fill="#64748b" letter-spacing="2">RELOJ 24H</text>
+                <text x="160" y="234" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#38bdf8" id="clock-face-tz">PERÚ (UTC-5)</text>
+
+                <!-- Hands -->
+                <!-- Hour hand (points to the 24h sector) -->
+                <line id="clock-hand-hour" x1="160" y1="160" x2="160" y2="90" stroke="#f8fafc" stroke-width="5" stroke-linecap="round" filter="url(#handShadow)" />
+                <!-- Minute hand -->
+                <line id="clock-hand-minute" x1="160" y1="160" x2="160" y2="56" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" filter="url(#handShadow)" />
+                <!-- Second hand with counterweight -->
+                <g id="clock-hand-second-group">
+                  <line x1="160" y1="185" x2="160" y2="42" stroke="#f43f5e" stroke-width="1.5" stroke-linecap="round" />
+                  <circle cx="160" cy="185" r="3.5" fill="#f43f5e" />
+                </g>
+
+                <!-- Center cap -->
+                <circle cx="160" cy="160" r="6" fill="#0f172a" stroke="#f43f5e" stroke-width="2.5" />
+              </svg>
+            </div>
+
+            <!-- Dial Legend below clock -->
+            <div class="flex items-center gap-3 mt-3 text-[11px]">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+                <span class="text-slate-300 font-medium">Off-Peak (Verde)</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#ef4444]"></span>
+                <span class="text-slate-300 font-medium">Peak (Rojo)</span>
+              </div>
+            </div>
           </div>
 
-          <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-            <span class="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-1">Hora Oficial UTC</span>
-            <div id="clock-utc" class="font-mono text-lg font-bold text-cyan-400">--:--:-- UTC</div>
-            <span class="text-[10px] text-slate-500 block">Referencia OpenCode</span>
+          <!-- Wall Clock Details & Info HUD -->
+          <div class="flex-1 w-full space-y-3">
+            <!-- Digital Time Card -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-0.5">Hora Local Seleccionada</span>
+                <div id="clock-local" class="font-mono text-2xl font-extrabold text-white tracking-tight">--:--:--</div>
+                <span id="tz-name-label" class="text-[11px] text-cyan-400 font-semibold block">Perú (Lima, UTC-5)</span>
+              </div>
+              <div class="text-right pl-4 border-l border-slate-800">
+                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-0.5">Hora Oficial UTC</span>
+                <div id="clock-utc" class="font-mono text-sm font-bold text-slate-300">--:--:-- UTC</div>
+                <span class="text-[10px] text-slate-500 block">Referencia OpenCode</span>
+              </div>
+            </div>
+
+            <!-- Current Segment Alert Box -->
+            <div id="clock-status-box" class="rounded-xl p-3.5 border transition-all duration-300 flex items-start gap-3">
+              <div id="clock-status-icon-wrap" class="p-2 rounded-lg mt-0.5 flex-shrink-0">
+                <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <span id="clock-status-label" class="text-xs font-bold uppercase tracking-wider text-white">Posición de la Aguja</span>
+                  <span id="clock-mode-indicator" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-mono">Reloj 24 Horas</span>
+                </div>
+                <p id="clock-status-sub" class="text-xs mt-0.5 leading-relaxed text-slate-300">
+                  Calculando segmento actual del reloj...
+                </p>
+              </div>
+            </div>
+
+            <!-- Next Transition Card -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i data-lucide="timer" class="w-4 h-4 text-amber-400 flex-shrink-0"></i>
+                <div>
+                  <span id="next-change-label" class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">Próximo Cambio en</span>
+                  <span id="next-change-sub" class="text-xs text-slate-300 block">Calculando...</span>
+                </div>
+              </div>
+              <div id="clock-countdown" class="font-mono text-sm sm:text-base font-extrabold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">
+                --h --m --s
+              </div>
+            </div>
+
           </div>
 
-          <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-            <span id="next-change-label" class="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-1">Próximo Cambio en</span>
-            <div id="clock-countdown" class="font-mono text-lg font-bold text-amber-400">--h --m --s</div>
-            <span id="next-change-sub" class="text-[10px] text-slate-500 block">Calculando...</span>
-          </div>
         </div>
       </div>
 
@@ -940,6 +1030,8 @@
 
       // Update current marker in timeline
       updateTimelineMarker(now, activeTz);
+      // Update wall clock hands
+      updateWallClockHands(now, activeTz);
     }
 
     /**
@@ -1048,6 +1140,175 @@
       } catch (e) {
         return false;
       }
+    }
+
+    /**
+     * Polar to Cartesian conversion for SVG Clock
+     */
+    function polarToCartesian(cx, cy, r, angleDeg) {
+      const rad = (angleDeg - 90) * Math.PI / 180.0;
+      return {
+        x: cx + (r * Math.cos(rad)),
+        y: cy + (r * Math.sin(rad))
+      };
+    }
+
+    /**
+     * Generates an SVG path for an annular sector / arc ring segment
+     */
+    function describeArc(cx, cy, rInner, rOuter, startAngle, endAngle) {
+      const p1 = polarToCartesian(cx, cy, rOuter, startAngle);
+      const p2 = polarToCartesian(cx, cy, rOuter, endAngle);
+      const p3 = polarToCartesian(cx, cy, rInner, endAngle);
+      const p4 = polarToCartesian(cx, cy, rInner, startAngle);
+      const largeArc = (endAngle - startAngle) <= 180 ? 0 : 1;
+      return [
+        'M', p1.x.toFixed(2), p1.y.toFixed(2),
+        'A', rOuter, rOuter, 0, largeArc, 1, p2.x.toFixed(2), p2.y.toFixed(2),
+        'L', p3.x.toFixed(2), p3.y.toFixed(2),
+        'A', rInner, rInner, 0, largeArc, 0, p4.x.toFixed(2), p4.y.toFixed(2),
+        'Z'
+      ].join(' ');
+    }
+
+    /**
+     * Draws the 24-hour segmented arcs on the wall clock dial
+     * Shaded green for Off-Peak and red for Peak based on active timezone
+     */
+    function drawWallClockSegments() {
+      const gSegments = document.getElementById('clock-segments-group');
+      const gTicks = document.getElementById('clock-ticks-group');
+      if (!gSegments || !gTicks) return;
+
+      gSegments.innerHTML = '';
+      gTicks.innerHTML = '';
+
+      const activeTz = getSelectedTimezone();
+      const now = new Date();
+
+      let year = now.getFullYear(), month = now.getMonth(), day = now.getDate();
+      try {
+        const dtf = new Intl.DateTimeFormat('en-US', {
+          timeZone: activeTz,
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric'
+        });
+        const parts = dtf.formatToParts(now);
+        parts.forEach(p => {
+          if (p.type === 'year') year = parseInt(p.value, 10);
+          if (p.type === 'month') month = parseInt(p.value, 10) - 1;
+          if (p.type === 'day') day = parseInt(p.value, 10);
+        });
+      } catch (e) {}
+
+      const cx = 160, cy = 160;
+      const rOuter = 145, rInner = 114;
+
+      for (let h = 0; h < 24; h++) {
+        const isPeak = isHourPeakOnDate(year, month, day, h, activeTz);
+        const startAngle = h * 15;
+        const endAngle = (h + 1) * 15 - 0.7; // subtle gap between hour sectors
+
+        const pathD = describeArc(cx, cy, rInner, rOuter, startAngle, endAngle);
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', pathD);
+        path.setAttribute('fill', isPeak ? 'rgba(239, 68, 68, 0.45)' : 'rgba(16, 185, 129, 0.35)');
+        path.setAttribute('stroke', isPeak ? '#ef4444' : '#10b981');
+        path.setAttribute('stroke-width', '1.2');
+        path.setAttribute('class', 'transition-all duration-300 hover:opacity-80 cursor-pointer');
+
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        title.textContent = `${pad(h)}:00 a ${pad((h + 1) % 24)}:00 — ${isPeak ? 'PEAK (Tarifa Normal)' : 'OFF-PEAK (50% Descuento)'}`;
+        path.appendChild(title);
+
+        gSegments.appendChild(path);
+
+        // Numerals for even hours (00, 02, 04, ..., 22)
+        if (h % 2 === 0) {
+          const midAngle = (h + 0.5) * 15;
+          const numPos = polarToCartesian(cx, cy, 98, midAngle);
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', numPos.x.toFixed(1));
+          text.setAttribute('y', (numPos.y + 3).toFixed(1));
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('font-family', "'JetBrains Mono', monospace");
+          text.setAttribute('font-size', (h % 6 === 0) ? '9.5' : '8');
+          text.setAttribute('font-weight', (h % 6 === 0) ? '800' : '600');
+          text.setAttribute('fill', (h % 6 === 0) ? '#38bdf8' : '#94a3b8');
+          text.textContent = pad(h);
+          gTicks.appendChild(text);
+        }
+      }
+
+      // Update center dial text
+      const faceTz = document.getElementById('clock-face-tz');
+      if (faceTz) {
+        faceTz.textContent = activeTz === 'America/Lima' ? 'PERÚ (UTC-5)' : activeTz.split('/').pop().toUpperCase().replace(/_/g, ' ');
+      }
+    }
+
+    /**
+     * Updates wall clock hands position and status box every second
+     */
+    function updateWallClockHands(now, activeTz) {
+      try {
+        const localParts = new Intl.DateTimeFormat('en-US', {
+          timeZone: activeTz,
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric',
+          hour12: false
+        }).formatToParts(now);
+
+        let h = 0, m = 0, s = 0;
+        localParts.forEach(p => {
+          if (p.type === 'hour') h = parseInt(p.value, 10);
+          if (p.type === 'minute') m = parseInt(p.value, 10);
+          if (p.type === 'second') s = parseInt(p.value, 10);
+        });
+
+        // In 24h dial: 360 deg = 24h -> 15 deg per hour
+        const hourDeg = (h + m / 60 + s / 3600) * 15;
+        // Minute hand: 360 deg = 60m -> 6 deg per min
+        const minDeg = (m + s / 60) * 6;
+        // Second hand: 360 deg = 60s -> 6 deg per sec
+        const secDeg = s * 6;
+
+        const handHour = document.getElementById('clock-hand-hour');
+        const handMin = document.getElementById('clock-hand-minute');
+        const handSecGroup = document.getElementById('clock-hand-second-group');
+
+        if (handHour) handHour.setAttribute('transform', `rotate(${hourDeg.toFixed(2)} 160 160)`);
+        if (handMin) handMin.setAttribute('transform', `rotate(${minDeg.toFixed(2)} 160 160)`);
+        if (handSecGroup) handSecGroup.setAttribute('transform', `rotate(${secDeg.toFixed(2)} 160 160)`);
+
+        // Update alert box
+        const isPeakNow = isPeakUTC(now);
+        const statusBox = document.getElementById('clock-status-box');
+        const statusIconWrap = document.getElementById('clock-status-icon-wrap');
+        const statusLabel = document.getElementById('clock-status-label');
+        const statusSub = document.getElementById('clock-status-sub');
+
+        if (statusBox && statusIconWrap && statusLabel && statusSub) {
+          if (isPeakNow) {
+            statusBox.className = "rounded-xl p-3.5 border border-rose-500/30 bg-rose-950/25 text-xs transition-all duration-300 flex items-start gap-3 shadow-inner";
+            statusIconWrap.className = "p-2 rounded-lg mt-0.5 bg-rose-500/20 text-rose-400";
+            statusIconWrap.innerHTML = `<i data-lucide="zap" class="w-4 h-4 text-rose-400"></i>`;
+            statusLabel.className = "text-xs font-bold uppercase tracking-wider text-rose-300";
+            statusLabel.textContent = "Aguja en Sector PEAK";
+            statusSub.innerHTML = `La aguja horaria marca las <strong class="text-white font-mono">${pad(h)}:${pad(m)}</strong>, dentro del sector <strong class="text-rose-400">rojo</strong> (alta demanda / tarifa regular).`;
+          } else {
+            statusBox.className = "rounded-xl p-3.5 border border-emerald-500/30 bg-emerald-950/25 text-xs transition-all duration-300 flex items-start gap-3 shadow-inner";
+            statusIconWrap.className = "p-2 rounded-lg mt-0.5 bg-emerald-500/20 text-emerald-400";
+            statusIconWrap.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>`;
+            statusLabel.className = "text-xs font-bold uppercase tracking-wider text-emerald-300";
+            statusLabel.textContent = "Aguja en Sector OFF-PEAK";
+            statusSub.innerHTML = `La aguja horaria marca las <strong class="text-white font-mono">${pad(h)}:${pad(m)}</strong>, dentro del sector <strong class="text-emerald-400">verde</strong> (50% de descuento activo).`;
+          }
+          lucide.createIcons();
+        }
+      } catch (e) {}
     }
 
     // Build the 24-Hour Timeline Bar
@@ -1308,6 +1569,7 @@
 
     // Refresh all views
     function refreshData() {
+      drawWallClockSegments();
       populateDaySelectorOptions();
       renderTimeline();
       renderWeeklyTable();
