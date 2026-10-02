@@ -175,27 +175,11 @@
               <span class="text-xs font-black uppercase tracking-widest text-slate-100 block">DEEPSEEK • RELOJ 12H</span>
               <span id="clock-header-tz" class="text-[11px] font-semibold text-cyan-400 block mt-0.5">Perú (Lima, UTC-5)</span>
 
-              <!-- Selector Dinámico de Ciclo AM / PM -->
-              <div class="mt-2 flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 rounded-xl p-1 shadow-inner">
-                <!-- Botón AM -->
-                <button type="button" id="btn-clock-cycle-am" onclick="setClockCycleManual('AM')" title="Ver sectores de mañana (00:00 - 12:00)" class="px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 text-slate-400 hover:text-white">
-                  <span id="dot-clock-cycle-am" class="w-2 h-2 rounded-full bg-slate-600"></span>
-                  <span>AM</span>
-                </button>
-
-                <div class="h-3.5 w-[1px] bg-slate-700"></div>
-
-                <!-- Botón PM -->
-                <button type="button" id="btn-clock-cycle-pm" onclick="setClockCycleManual('PM')" title="Ver sectores de tarde/noche (12:00 - 24:00)" class="px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 text-slate-400 hover:text-white">
-                  <span id="dot-clock-cycle-pm" class="w-2 h-2 rounded-full bg-slate-600"></span>
-                  <span>PM</span>
-                </button>
-
-                <!-- Botón Sincronizar En Vivo / Auto -->
-                <button type="button" id="btn-clock-cycle-auto" onclick="setClockCycleAuto()" title="Modo en vivo: Sincronizado automáticamente con la hora actual" class="ml-1 px-2 py-1 text-[10px] font-extrabold rounded-lg border border-cyan-500/40 bg-cyan-500/20 text-cyan-300 flex items-center gap-1 transition-all">
-                  <i data-lucide="sparkles" class="w-3 h-3 text-cyan-400"></i>
-                  <span id="text-clock-cycle-auto">Auto</span>
-                </button>
+              <!-- Indicador Automático AM / PM (Inmutable: cambia automáticamente según la hora local) -->
+              <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-900/90 border border-slate-700/80 shadow-inner">
+                <span id="clock-cycle-dot" class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse"></span>
+                <span id="clock-cycle-text" class="text-xs font-black uppercase tracking-wider text-cyan-300 font-mono">CICLO PM</span>
+                <span id="clock-cycle-sub" class="text-[10px] text-slate-400 font-medium">(12:00 - 24:00 • Automático)</span>
               </div>
             </div>
 
@@ -286,7 +270,7 @@
                 </div>
               </div>
               <span id="clock-cycle-legend-note" class="text-[10px] text-cyan-400 font-mono text-center">
-                Sectores mostrando ciclo: PM (12:00 a 24:00)
+                Sectores mostrando ciclo: PM (12:00 a 24:00 • Automático)
               </span>
             </div>
           </div>
@@ -1194,7 +1178,7 @@
       // Check if auto clock cycle needs sector refresh (e.g. crossing noon or midnight)
       if (typeof getEffectiveClockCycle === 'function') {
         const currentEffCycle = getEffectiveClockCycle(now, activeTz);
-        if (clockCycleMode === 'AUTO' && currentEffCycle !== lastRenderedClockCycle) {
+        if (currentEffCycle !== lastRenderedClockCycle) {
           drawWallClockSegments();
         } else {
           updateClockCycleUI();
@@ -1521,13 +1505,13 @@
       ].join(' ');
     }
 
-    let clockCycleMode = 'AUTO'; // 'AUTO', 'AM', 'PM'
     let lastRenderedClockCycle = null;
 
+    /**
+     * Determines the automatic 12h clock cycle ('AM' or 'PM') for the active timezone.
+     * Strictly automatic based on local time: 00:00-11:59 = AM, 12:00-23:59 = PM.
+     */
     function getEffectiveClockCycle(now, tz) {
-      if (clockCycleMode === 'AM' || clockCycleMode === 'PM') {
-        return clockCycleMode;
-      }
       try {
         const parts = new Intl.DateTimeFormat('en-US', {
           timeZone: tz,
@@ -1541,60 +1525,31 @@
       }
     }
 
-    function setClockCycleManual(cycle) {
-      clockCycleMode = cycle;
-      drawWallClockSegments();
-      updateClockCycleUI();
-    }
-
-    function setClockCycleAuto() {
-      clockCycleMode = 'AUTO';
-      drawWallClockSegments();
-      updateClockCycleUI();
-    }
-
+    /**
+     * Updates the automatic AM/PM indicator badge and legends.
+     */
     function updateClockCycleUI() {
       const now = new Date();
       const activeTz = getSelectedTimezone();
       const effectiveCycle = getEffectiveClockCycle(now, activeTz);
-      const isAuto = (clockCycleMode === 'AUTO');
 
-      const btnAm = document.getElementById('btn-clock-cycle-am');
-      const btnPm = document.getElementById('btn-clock-cycle-pm');
-      const dotAm = document.getElementById('dot-clock-cycle-am');
-      const dotPm = document.getElementById('dot-clock-cycle-pm');
-      const btnAuto = document.getElementById('btn-clock-cycle-auto');
-      const textAuto = document.getElementById('text-clock-cycle-auto');
+      const cycleBadge = document.getElementById('clock-cycle-text');
+      const cycleSub = document.getElementById('clock-cycle-sub');
       const legendNote = document.getElementById('clock-cycle-legend-note');
 
-      if (btnAm && btnPm) {
-        if (effectiveCycle === 'AM') {
-          btnAm.className = "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.4)]";
-          if (dotAm) dotAm.className = "w-2 h-2 rounded-full bg-slate-950";
-          btnPm.className = "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 text-slate-400 hover:text-white";
-          if (dotPm) dotPm.className = "w-2 h-2 rounded-full bg-slate-600";
-        } else {
-          btnPm.className = "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.4)]";
-          if (dotPm) dotPm.className = "w-2 h-2 rounded-full bg-slate-950";
-          btnAm.className = "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 text-slate-400 hover:text-white";
-          if (dotAm) dotAm.className = "w-2 h-2 rounded-full bg-slate-600";
-        }
+      if (cycleBadge) {
+        cycleBadge.textContent = effectiveCycle === 'AM' ? "CICLO AM" : "CICLO PM";
       }
-
-      if (btnAuto && textAuto) {
-        if (isAuto) {
-          btnAuto.className = "ml-1 px-2 py-1 text-[10px] font-extrabold rounded-lg border border-cyan-500/40 bg-cyan-500/20 text-cyan-300 shadow-sm flex items-center gap-1";
-          textAuto.textContent = `Auto (${effectiveCycle})`;
-        } else {
-          btnAuto.className = "ml-1 px-2 py-1 text-[10px] font-bold rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/30 flex items-center gap-1";
-          textAuto.textContent = `Volver a Auto`;
-        }
+      if (cycleSub) {
+        cycleSub.textContent = effectiveCycle === 'AM' 
+          ? "(00:00 - 12:00 • Automático)" 
+          : "(12:00 - 24:00 • Automático)";
       }
 
       if (legendNote) {
         legendNote.textContent = effectiveCycle === 'AM' 
-          ? "Sectores mostrando ciclo: AM (00:00 a 12:00 • Madrugada / Mañana)"
-          : "Sectores mostrando ciclo: PM (12:00 a 24:00 • Tarde / Noche)";
+          ? "Sectores en reloj: Ciclo AM (00:00 a 12:00 • Automático)"
+          : "Sectores en reloj: Ciclo PM (12:00 a 24:00 • Automático)";
       }
 
       const modeIndicator = document.getElementById('clock-mode-indicator');
@@ -1812,27 +1767,20 @@
           const time12Str = `${pad(displayH)}:${pad(m)} ${ampm}`;
           const time24Str = `${pad(h)}:${pad(m)}`;
 
-          const effectiveCycle = getEffectiveClockCycle(now, activeTz);
-          const isViewingDifferentCycle = (clockCycleMode !== 'AUTO' && clockCycleMode !== ampm);
-          let cycleNotice = '';
-          if (isViewingDifferentCycle) {
-            cycleNotice = ` <span class="text-amber-300 block mt-1 text-[11px]">⚠️ Nota: Vista manual fija en ciclo <strong>${clockCycleMode}</strong>.</span>`;
-          }
-
           if (isPeakNow) {
             statusBox.className = "rounded-xl p-3.5 border border-rose-500/30 bg-rose-950/25 text-xs transition-all duration-300 flex items-start gap-3 shadow-inner";
             statusIconWrap.className = "p-2 rounded-lg mt-0.5 bg-rose-500/20 text-rose-400";
             statusIconWrap.innerHTML = `<i data-lucide="zap" class="w-4 h-4 text-rose-400"></i>`;
             statusLabel.className = "text-xs font-bold uppercase tracking-wider text-rose-300";
             statusLabel.textContent = "Centro en ROJO (Peak Activo)";
-            statusSub.innerHTML = `Horario y minutero marcan las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-rose-400 font-bold">ROJO</strong> dentro del sector Peak (tarifa estándar).${cycleNotice}`;
+            statusSub.innerHTML = `Horario y minutero marcan las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-rose-400 font-bold">ROJO</strong> dentro del sector Peak (tarifa estándar).`;
           } else {
             statusBox.className = "rounded-xl p-3.5 border border-emerald-500/30 bg-emerald-950/25 text-xs transition-all duration-300 flex items-start gap-3 shadow-inner";
             statusIconWrap.className = "p-2 rounded-lg mt-0.5 bg-emerald-500/20 text-emerald-400";
             statusIconWrap.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>`;
             statusLabel.className = "text-xs font-bold uppercase tracking-wider text-emerald-300";
             statusLabel.textContent = "Centro en VERDE (Off-Peak Activo)";
-            statusSub.innerHTML = `Horario y minutero marcan las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-emerald-400 font-bold">VERDE</strong> dentro del sector Off-Peak (50% de descuento).${cycleNotice}`;
+            statusSub.innerHTML = `Horario y minutero marcan las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-emerald-400 font-bold">VERDE</strong> dentro del sector Off-Peak (50% de descuento).`;
           }
           lucide.createIcons();
         }
