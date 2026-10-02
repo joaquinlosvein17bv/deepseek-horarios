@@ -170,10 +170,33 @@
           
           <!-- Analog Wall Clock (Inspirado en relojoriginal.jpg) -->
           <div class="relative flex-shrink-0 flex flex-col items-center">
-            <!-- Título fuera del reloj arriba -->
-            <div class="mb-2.5 text-center">
+            <!-- Título fuera del reloj arriba con selector dinámico AM / PM -->
+            <div class="mb-3 text-center flex flex-col items-center">
               <span class="text-xs font-black uppercase tracking-widest text-slate-100 block">DEEPSEEK • RELOJ 12H</span>
-              <span id="clock-header-tz" class="text-xs font-semibold text-cyan-400 block">Perú (Lima, UTC-5)</span>
+              <span id="clock-header-tz" class="text-[11px] font-semibold text-cyan-400 block mt-0.5">Perú (Lima, UTC-5)</span>
+
+              <!-- Selector Dinámico de Ciclo AM / PM -->
+              <div class="mt-2 flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 rounded-xl p-1 shadow-inner">
+                <!-- Botón AM -->
+                <button type="button" id="btn-clock-cycle-am" onclick="setClockCycleManual('AM')" title="Ver sectores de mañana (00:00 - 12:00)" class="px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 text-slate-400 hover:text-white">
+                  <span id="dot-clock-cycle-am" class="w-2 h-2 rounded-full bg-slate-600"></span>
+                  <span>AM</span>
+                </button>
+
+                <div class="h-3.5 w-[1px] bg-slate-700"></div>
+
+                <!-- Botón PM -->
+                <button type="button" id="btn-clock-cycle-pm" onclick="setClockCycleManual('PM')" title="Ver sectores de tarde/noche (12:00 - 24:00)" class="px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 text-slate-400 hover:text-white">
+                  <span id="dot-clock-cycle-pm" class="w-2 h-2 rounded-full bg-slate-600"></span>
+                  <span>PM</span>
+                </button>
+
+                <!-- Botón Sincronizar En Vivo / Auto -->
+                <button type="button" id="btn-clock-cycle-auto" onclick="setClockCycleAuto()" title="Modo en vivo: Sincronizado automáticamente con la hora actual" class="ml-1 px-2 py-1 text-[10px] font-extrabold rounded-lg border border-cyan-500/40 bg-cyan-500/20 text-cyan-300 flex items-center gap-1 transition-all">
+                  <i data-lucide="sparkles" class="w-3 h-3 text-cyan-400"></i>
+                  <span id="text-clock-cycle-auto">Auto</span>
+                </button>
+              </div>
             </div>
 
             <div class="relative p-2 rounded-full bg-gradient-to-br from-slate-300 via-slate-100 to-slate-400 p-[3px] shadow-[0_20px_45px_rgba(0,0,0,0.7)] ring-2 ring-slate-400/50">
@@ -247,19 +270,24 @@
             </div>
 
             <!-- Dial Legend below clock -->
-            <div class="flex items-center gap-3 mt-3 text-[11px]">
-              <div class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
-                <span class="text-slate-300 font-medium">Off-Peak (Verde)</span>
+            <div class="flex flex-col items-center gap-1.5 mt-3 text-[11px]">
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+                  <span class="text-slate-300 font-medium">Off-Peak (Verde)</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#ef4444]"></span>
+                  <span class="text-slate-300 font-medium">Peak (Rojo)</span>
+                </div>
+                <div class="flex items-center gap-1.5 pl-1.5 border-l border-slate-700">
+                  <span class="text-slate-400">Centro:</span>
+                  <span id="center-legend-status" class="font-bold text-emerald-400">OFF-PEAK (Verde)</span>
+                </div>
               </div>
-              <div class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#ef4444]"></span>
-                <span class="text-slate-300 font-medium">Peak (Rojo)</span>
-              </div>
-              <div class="flex items-center gap-1.5 pl-1.5 border-l border-slate-700">
-                <span class="text-slate-400">Centro:</span>
-                <span id="center-legend-status" class="font-bold text-emerald-400">OFF-PEAK (Verde)</span>
-              </div>
+              <span id="clock-cycle-legend-note" class="text-[10px] text-cyan-400 font-mono text-center">
+                Sectores mostrando ciclo: PM (12:00 a 24:00)
+              </span>
             </div>
           </div>
 
@@ -1162,6 +1190,17 @@
 
       // Update current marker in timeline
       updateTimelineMarker(now, activeTz);
+
+      // Check if auto clock cycle needs sector refresh (e.g. crossing noon or midnight)
+      if (typeof getEffectiveClockCycle === 'function') {
+        const currentEffCycle = getEffectiveClockCycle(now, activeTz);
+        if (clockCycleMode === 'AUTO' && currentEffCycle !== lastRenderedClockCycle) {
+          drawWallClockSegments();
+        } else {
+          updateClockCycleUI();
+        }
+      }
+
       // Update wall clock hands
       updateWallClockHands(now, activeTz);
     }
@@ -1482,13 +1521,96 @@
       ].join(' ');
     }
 
+    let clockCycleMode = 'AUTO'; // 'AUTO', 'AM', 'PM'
+    let lastRenderedClockCycle = null;
+
+    function getEffectiveClockCycle(now, tz) {
+      if (clockCycleMode === 'AM' || clockCycleMode === 'PM') {
+        return clockCycleMode;
+      }
+      try {
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz,
+          hour: 'numeric',
+          hour12: false
+        }).formatToParts(now);
+        const h = parseInt(parts.find(p => p.type === 'hour')?.value || now.getHours(), 10);
+        return h >= 12 ? 'PM' : 'AM';
+      } catch (e) {
+        return now.getHours() >= 12 ? 'PM' : 'AM';
+      }
+    }
+
+    function setClockCycleManual(cycle) {
+      clockCycleMode = cycle;
+      drawWallClockSegments();
+      updateClockCycleUI();
+    }
+
+    function setClockCycleAuto() {
+      clockCycleMode = 'AUTO';
+      drawWallClockSegments();
+      updateClockCycleUI();
+    }
+
+    function updateClockCycleUI() {
+      const now = new Date();
+      const activeTz = getSelectedTimezone();
+      const effectiveCycle = getEffectiveClockCycle(now, activeTz);
+      const isAuto = (clockCycleMode === 'AUTO');
+
+      const btnAm = document.getElementById('btn-clock-cycle-am');
+      const btnPm = document.getElementById('btn-clock-cycle-pm');
+      const dotAm = document.getElementById('dot-clock-cycle-am');
+      const dotPm = document.getElementById('dot-clock-cycle-pm');
+      const btnAuto = document.getElementById('btn-clock-cycle-auto');
+      const textAuto = document.getElementById('text-clock-cycle-auto');
+      const legendNote = document.getElementById('clock-cycle-legend-note');
+
+      if (btnAm && btnPm) {
+        if (effectiveCycle === 'AM') {
+          btnAm.className = "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.4)]";
+          if (dotAm) dotAm.className = "w-2 h-2 rounded-full bg-slate-950";
+          btnPm.className = "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 text-slate-400 hover:text-white";
+          if (dotPm) dotPm.className = "w-2 h-2 rounded-full bg-slate-600";
+        } else {
+          btnPm.className = "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.4)]";
+          if (dotPm) dotPm.className = "w-2 h-2 rounded-full bg-slate-950";
+          btnAm.className = "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 text-slate-400 hover:text-white";
+          if (dotAm) dotAm.className = "w-2 h-2 rounded-full bg-slate-600";
+        }
+      }
+
+      if (btnAuto && textAuto) {
+        if (isAuto) {
+          btnAuto.className = "ml-1 px-2 py-1 text-[10px] font-extrabold rounded-lg border border-cyan-500/40 bg-cyan-500/20 text-cyan-300 shadow-sm flex items-center gap-1";
+          textAuto.textContent = `Auto (${effectiveCycle})`;
+        } else {
+          btnAuto.className = "ml-1 px-2 py-1 text-[10px] font-bold rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/30 flex items-center gap-1";
+          textAuto.textContent = `Volver a Auto`;
+        }
+      }
+
+      if (legendNote) {
+        legendNote.textContent = effectiveCycle === 'AM' 
+          ? "Sectores mostrando ciclo: AM (00:00 a 12:00 • Madrugada / Mañana)"
+          : "Sectores mostrando ciclo: PM (12:00 a 24:00 • Tarde / Noche)";
+      }
+
+      const modeIndicator = document.getElementById('clock-mode-indicator');
+      if (modeIndicator) {
+        modeIndicator.textContent = `Reloj 12H • Ciclo ${effectiveCycle} (${effectiveCycle === 'AM' ? '00:00 - 12:00' : '12:00 - 24:00'})`;
+      }
+    }
+
     /**
      * Draws the 12-hour wall clock segmented sectors (pie wedges), numerals and tick marks
      * Directly inspired by relojoriginal.jpg:
      * - Silver/brushed bezel with white dial face.
      * - Pie wedges shaded in coral RED for Peak hours and vibrant GREEN for Off-Peak.
+     * - Dynamically separated into AM (00:00-12:00) and PM (12:00-24:00) cycles.
      * - Numerals 1 to 12 positioned around the face (ON TOP of everything with crisp white halo).
-     * - 60 precision minute tick marks in solid black.
+     * - 12 hour ticks in solid black without intermediate tick clutter.
      */
     function drawWallClockSegments() {
       const gSegments = document.getElementById('clock-segments-group');
@@ -1522,12 +1644,19 @@
       const cx = 160, cy = 160;
       const rOuter = 141, rInner = 16;
 
+      const effectiveCycle = getEffectiveClockCycle(now, activeTz);
+      lastRenderedClockCycle = effectiveCycle;
+      const hourOffset = effectiveCycle === 'PM' ? 12 : 0;
+
       // 12 sectors for the 12 hours of the clock face (1 to 12)
-      // In 12h clock, sector h is Peak if either AM (h) or PM (h+12) is Peak on this date in activeTz
+      // In 12h clock:
+      // h = 0 is between 12 and 1 (00:00-01:00 for AM, 12:00-13:00 for PM)
+      // h = 1 is between 1 and 2 (01:00-02:00 for AM, 13:00-14:00 for PM)
+      // ...
+      // h = 11 is between 11 and 12 (11:00-12:00 for AM, 23:00-24:00 for PM)
       for (let h = 0; h < 12; h++) {
-        const isPeakAM = isHourPeakOnDate(year, month, day, h, activeTz);
-        const isPeakPM = isHourPeakOnDate(year, month, day, h + 12, activeTz);
-        const isPeak = isPeakAM || isPeakPM;
+        const localHour = h + hourOffset;
+        const isPeak = isHourPeakOnDate(year, month, day, localHour, activeTz);
 
         const startAngle = h * 30;
         const endAngle = (h + 1) * 30 - 0.4; // fine border separation
@@ -1542,8 +1671,11 @@
 
         const clockHourDisplay = h === 0 ? 12 : h;
         const nextClockHourDisplay = h + 1;
+        const time24Start = pad(localHour);
+        const time24End = pad((localHour + 1) % 24);
+
         const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-        title.textContent = `Sector ${clockHourDisplay}:00 a ${nextClockHourDisplay}:00 — ${isPeak ? 'PEAK (Rojo)' : 'OFF-PEAK (Verde)'}`;
+        title.textContent = `Sector ${effectiveCycle} ${clockHourDisplay}:00 a ${nextClockHourDisplay}:00 (${time24Start}:00 a ${time24End}:00) — ${isPeak ? 'PEAK (Rojo)' : 'OFF-PEAK (Verde)'}`;
         path.appendChild(title);
 
         gSegments.appendChild(path);
@@ -1596,6 +1728,8 @@
       if (headerTz) {
         headerTz.textContent = getTimezoneDisplayName(activeTz);
       }
+
+      updateClockCycleUI();
     }
 
     /**
@@ -1678,20 +1812,27 @@
           const time12Str = `${pad(displayH)}:${pad(m)} ${ampm}`;
           const time24Str = `${pad(h)}:${pad(m)}`;
 
+          const effectiveCycle = getEffectiveClockCycle(now, activeTz);
+          const isViewingDifferentCycle = (clockCycleMode !== 'AUTO' && clockCycleMode !== ampm);
+          let cycleNotice = '';
+          if (isViewingDifferentCycle) {
+            cycleNotice = ` <span class="text-amber-300 block mt-1 text-[11px]">⚠️ Nota: Vista manual fija en ciclo <strong>${clockCycleMode}</strong>.</span>`;
+          }
+
           if (isPeakNow) {
             statusBox.className = "rounded-xl p-3.5 border border-rose-500/30 bg-rose-950/25 text-xs transition-all duration-300 flex items-start gap-3 shadow-inner";
             statusIconWrap.className = "p-2 rounded-lg mt-0.5 bg-rose-500/20 text-rose-400";
             statusIconWrap.innerHTML = `<i data-lucide="zap" class="w-4 h-4 text-rose-400"></i>`;
             statusLabel.className = "text-xs font-bold uppercase tracking-wider text-rose-300";
             statusLabel.textContent = "Centro en ROJO (Peak Activo)";
-            statusSub.innerHTML = `Horario y minutero marcan las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-rose-400 font-bold">ROJO</strong> dentro del sector Peak (tarifa estándar).`;
+            statusSub.innerHTML = `Horario y minutero marcan las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-rose-400 font-bold">ROJO</strong> dentro del sector Peak (tarifa estándar).${cycleNotice}`;
           } else {
             statusBox.className = "rounded-xl p-3.5 border border-emerald-500/30 bg-emerald-950/25 text-xs transition-all duration-300 flex items-start gap-3 shadow-inner";
             statusIconWrap.className = "p-2 rounded-lg mt-0.5 bg-emerald-500/20 text-emerald-400";
             statusIconWrap.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>`;
             statusLabel.className = "text-xs font-bold uppercase tracking-wider text-emerald-300";
             statusLabel.textContent = "Centro en VERDE (Off-Peak Activo)";
-            statusSub.innerHTML = `Horario y minutero marcan las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-emerald-400 font-bold">VERDE</strong> dentro del sector Off-Peak (50% de descuento).`;
+            statusSub.innerHTML = `Horario y minutero marcan las <strong class="text-white font-mono">${time12Str}</strong> (${time24Str}), centro en <strong class="text-emerald-400 font-bold">VERDE</strong> dentro del sector Off-Peak (50% de descuento).${cycleNotice}`;
           }
           lucide.createIcons();
         }
