@@ -354,7 +354,7 @@
     </section>
 
     <!-- Visual 24-Hour Timeline Bar -->
-    <section class="glass-card rounded-2xl p-6">
+    <section class="glass-card rounded-2xl p-6 relative z-20">
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-4">
         <div>
           <div class="flex items-center gap-2">
@@ -366,27 +366,122 @@
           </p>
         </div>
 
-        <!-- Interactive Day Selector -->
-        <div class="flex flex-wrap items-center gap-2 bg-slate-900/90 border border-slate-700/80 rounded-xl p-1.5 shadow-inner">
-          <div class="flex items-center gap-1">
-            <button type="button" id="btn-day-0" onclick="setDayOffset(0)" class="day-tab px-3 py-1.5 text-xs font-bold rounded-lg bg-cyan-500 text-slate-950 shadow-sm transition-all">
-              Hoy
+        <!-- Interactive Date & Calendar Controller -->
+        <div class="relative flex-shrink-0">
+          <div class="flex flex-wrap items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 rounded-xl p-1.5 shadow-inner">
+            <!-- Step Back Buttons -->
+            <button type="button" onclick="stepTimelineDays(-7)" title="Retroceder 1 semana (-7 días)" class="px-2.5 py-1.5 text-xs font-bold rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-all flex items-center gap-1">
+              <i data-lucide="chevrons-left" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span class="hidden sm:inline">-7d</span>
             </button>
-            <button type="button" id="btn-day-1" onclick="setDayOffset(1)" class="day-tab px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-all">
-              Mañana
+            <button type="button" onclick="stepTimelineDays(-1)" title="Día anterior (-1 día)" class="px-2.5 py-1.5 text-xs font-bold rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-all flex items-center gap-1">
+              <i data-lucide="chevron-left" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span class="hidden sm:inline">Ayer</span>
             </button>
-            <button type="button" id="btn-day-2" onclick="setDayOffset(2)" class="day-tab px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-all">
-              Pasado mañana
+
+            <!-- Today Button -->
+            <button type="button" id="btn-timeline-today" onclick="setTimelineToToday()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.4)] transition-all flex items-center gap-1.5">
+              <i data-lucide="calendar-check" class="w-3.5 h-3.5"></i>
+              <span>Hoy</span>
+            </button>
+
+            <!-- Step Forward Buttons -->
+            <button type="button" onclick="stepTimelineDays(1)" title="Día siguiente (+1 día)" class="px-2.5 py-1.5 text-xs font-bold rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-all flex items-center gap-1">
+              <span class="hidden sm:inline">Mañana</span>
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-cyan-400"></i>
+            </button>
+            <button type="button" onclick="stepTimelineDays(7)" title="Avanzar 1 semana (+7 días)" class="px-2.5 py-1.5 text-xs font-bold rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-all flex items-center gap-1">
+              <span class="hidden sm:inline">+7d</span>
+              <i data-lucide="chevrons-right" class="w-3.5 h-3.5 text-cyan-400"></i>
+            </button>
+
+            <div class="h-4 w-[1px] bg-slate-700 mx-0.5"></div>
+
+            <!-- Calendar Popover Toggle Button -->
+            <button type="button" id="btn-calendar-toggle" onclick="toggleCalendarPopover()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800/90 hover:bg-slate-700/90 border border-slate-600/80 text-white transition-all flex items-center gap-2 shadow-sm">
+              <i data-lucide="calendar" class="w-4 h-4 text-cyan-400"></i>
+              <span id="calendar-btn-label">Calendario</span>
+              <i data-lucide="chevron-down" id="calendar-btn-chevron" class="w-3 h-3 text-slate-400 transition-transform duration-200"></i>
             </button>
           </div>
 
-          <div class="h-4 w-[1px] bg-slate-700 mx-1 hidden sm:block"></div>
+          <!-- Glassmorphic Calendar Popover Modal/Panel -->
+          <div id="calendar-popover" class="hidden absolute right-0 top-full mt-2 z-50 w-80 sm:w-96 bg-slate-900/95 backdrop-blur-xl border border-slate-700/90 rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.85)] ring-1 ring-cyan-500/20 transition-all">
+            <!-- Calendar Header with Navigation -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="changeCalendarMonth(-12)" title="Año anterior (-12 meses)" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                  <i data-lucide="chevrons-left" class="w-4 h-4"></i>
+                </button>
+                <button type="button" onclick="changeCalendarMonth(-1)" title="Mes anterior" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+              </div>
 
-          <div class="flex items-center gap-1.5 pl-1">
-            <i data-lucide="calendar" class="w-3.5 h-3.5 text-cyan-400"></i>
-            <select id="timeline-day-select" class="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer py-1 pr-1 border-none">
-              <!-- Options populated dynamically -->
-            </select>
+              <div class="text-center">
+                <span id="calendar-month-year-label" class="font-extrabold text-sm text-white capitalize block">Octubre 2026</span>
+                <span class="text-[10px] text-cyan-400 font-mono" id="calendar-header-tz-label">Perú (Lima, UTC-5)</span>
+              </div>
+
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="changeCalendarMonth(1)" title="Mes siguiente" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                  <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+                <button type="button" onclick="changeCalendarMonth(12)" title="Año siguiente (+12 meses)" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+                  <i data-lucide="chevrons-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Days of Week Header -->
+            <div class="grid grid-cols-7 gap-1 text-center py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <span>Lun</span>
+              <span>Mar</span>
+              <span>Mié</span>
+              <span>Jue</span>
+              <span>Vie</span>
+              <span class="text-emerald-400">Sáb</span>
+              <span class="text-emerald-400">Dom</span>
+            </div>
+
+            <!-- Calendar Days Matrix Grid (Populated dynamically) -->
+            <div id="calendar-days-grid" class="grid grid-cols-7 gap-1 text-xs"></div>
+
+            <!-- Quick Shortcuts inside popover -->
+            <div class="mt-3 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-1.5 text-[11px]">
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="stepTimelineDays(-7); closeCalendarPopover();" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium">
+                  -1 Sem
+                </button>
+                <button type="button" onclick="stepTimelineDays(-1); closeCalendarPopover();" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium">
+                  Ayer
+                </button>
+                <button type="button" onclick="setTimelineToToday(); closeCalendarPopover();" class="px-2 py-1 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30 font-bold">
+                  Hoy
+                </button>
+                <button type="button" onclick="stepTimelineDays(1); closeCalendarPopover();" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium">
+                  Mañana
+                </button>
+                <button type="button" onclick="stepTimelineDays(7); closeCalendarPopover();" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium">
+                  +1 Sem
+                </button>
+              </div>
+
+              <!-- Native input picker for direct manual date input -->
+              <input type="date" id="native-date-input" onchange="onNativeDateSelected(this.value); closeCalendarPopover();" class="bg-slate-800 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-slate-300 focus:outline-none focus:border-cyan-500 cursor-pointer" />
+            </div>
+
+            <!-- Calendar Legend -->
+            <div class="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
+              <span class="flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block shadow-[0_0_4px_#34d399]"></span>
+                Fin de semana (100% Off-Peak)
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-rose-400 inline-block"></span>
+                Día laboral (Peak activo)
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -1090,77 +1185,256 @@
       }
     }
 
-    // Global State for selected day in Timeline (0 = Hoy, 1 = Mañana, 2 = Pasado mañana, etc.)
-    let selectedDayOffset = 0;
+    // Global State for selected date in Timeline and Calendar
+    let timelineDate = null; // { year, month, day }
+    let calendarViewYear = 2026;
+    let calendarViewMonth = 9; // 0-indexed (9 = Oct)
 
-    function setDayOffset(offset) {
-      selectedDayOffset = parseInt(offset, 10);
-      
-      // Update quick buttons
-      for (let i = 0; i <= 2; i++) {
-        const btn = document.getElementById(`btn-day-${i}`);
-        if (btn) {
-          if (i === selectedDayOffset) {
-            btn.className = "day-tab px-3 py-1.5 text-xs font-bold rounded-lg bg-cyan-500 text-slate-950 shadow-sm transition-all";
-          } else {
-            btn.className = "day-tab px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-all";
-          }
-        }
-      }
-
-      // Sync select dropdown
-      const select = document.getElementById('timeline-day-select');
-      if (select && parseInt(select.value, 10) !== selectedDayOffset) {
-        select.value = selectedDayOffset;
-      }
-
-      renderTimeline();
+    function getTodayInTimezone(tz) {
+      const now = new Date();
+      let y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+      try {
+        const dtf = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz,
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric'
+        });
+        const parts = dtf.formatToParts(now);
+        parts.forEach(p => {
+          if (p.type === 'year') y = parseInt(p.value, 10);
+          if (p.type === 'month') m = parseInt(p.value, 10) - 1;
+          if (p.type === 'day') d = parseInt(p.value, 10);
+        });
+      } catch (e) {}
+      return { year: y, month: m, day: d };
     }
 
-    /**
-     * Populates the day dropdown selector with dynamic dates formatted in the user's active timezone.
-     */
-    function populateDaySelectorOptions() {
-      const select = document.getElementById('timeline-day-select');
-      if (!select) return;
+    function initTimelineDate() {
       const activeTz = getSelectedTimezone();
-      const now = new Date();
+      const today = getTodayInTimezone(activeTz);
+      timelineDate = { year: today.year, month: today.month, day: today.day };
+      calendarViewYear = today.year;
+      calendarViewMonth = today.month;
+    }
 
-      select.innerHTML = '';
-      for (let offset = 0; offset <= 7; offset++) {
-        const targetDate = new Date(now.getTime() + offset * 86400000);
+    function isTimelineDateToday() {
+      if (!timelineDate) initTimelineDate();
+      const activeTz = getSelectedTimezone();
+      const today = getTodayInTimezone(activeTz);
+      return timelineDate.year === today.year &&
+             timelineDate.month === today.month &&
+             timelineDate.day === today.day;
+    }
+
+    function setTimelineDate(year, month, day) {
+      // Normalize via UTC date math
+      const d = new Date(Date.UTC(year, month, day, 12, 0, 0));
+      timelineDate = {
+        year: d.getUTCFullYear(),
+        month: d.getUTCMonth(),
+        day: d.getUTCDate()
+      };
+      calendarViewYear = timelineDate.year;
+      calendarViewMonth = timelineDate.month;
+      
+      renderTimeline();
+      renderCalendarGrid();
+      updateTimelineControlsUI();
+    }
+
+    function setTimelineToToday() {
+      const activeTz = getSelectedTimezone();
+      const today = getTodayInTimezone(activeTz);
+      setTimelineDate(today.year, today.month, today.day);
+    }
+
+    function stepTimelineDays(deltaDays) {
+      if (!timelineDate) initTimelineDate();
+      const currentUtc = new Date(Date.UTC(timelineDate.year, timelineDate.month, timelineDate.day + deltaDays, 12, 0, 0));
+      setTimelineDate(currentUtc.getUTCFullYear(), currentUtc.getUTCMonth(), currentUtc.getUTCDate());
+    }
+
+    function onNativeDateSelected(dateStr) {
+      if (!dateStr) return;
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        setTimelineDate(y, m, d);
+      }
+    }
+
+    function toggleCalendarPopover() {
+      const popover = document.getElementById('calendar-popover');
+      const chevron = document.getElementById('calendar-btn-chevron');
+      if (!popover) return;
+      const isHidden = popover.classList.contains('hidden');
+      if (isHidden) {
+        popover.classList.remove('hidden');
+        if (chevron) chevron.classList.add('rotate-180');
+        renderCalendarGrid();
+      } else {
+        popover.classList.add('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+      }
+    }
+
+    function closeCalendarPopover() {
+      const popover = document.getElementById('calendar-popover');
+      const chevron = document.getElementById('calendar-btn-chevron');
+      if (popover) popover.classList.add('hidden');
+      if (chevron) chevron.classList.remove('rotate-180');
+    }
+
+    function changeCalendarMonth(deltaMonths) {
+      const d = new Date(Date.UTC(calendarViewYear, calendarViewMonth + deltaMonths, 1, 12, 0, 0));
+      calendarViewYear = d.getUTCFullYear();
+      calendarViewMonth = d.getUTCMonth();
+      renderCalendarGrid();
+    }
+
+    function renderCalendarGrid() {
+      const grid = document.getElementById('calendar-days-grid');
+      const monthYearLabel = document.getElementById('calendar-month-year-label');
+      const tzLabel = document.getElementById('calendar-header-tz-label');
+      if (!grid) return;
+
+      const activeTz = getSelectedTimezone();
+      const today = getTodayInTimezone(activeTz);
+      if (!timelineDate) initTimelineDate();
+
+      const monthNames = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+      ];
+      if (monthYearLabel) {
+        monthYearLabel.textContent = `${monthNames[calendarViewMonth]} ${calendarViewYear}`;
+      }
+      if (tzLabel) {
+        tzLabel.textContent = getTimezoneDisplayName(activeTz);
+      }
+
+      const nativeInput = document.getElementById('native-date-input');
+      if (nativeInput && timelineDate) {
+        nativeInput.value = `${timelineDate.year}-${pad(timelineDate.month + 1)}-${pad(timelineDate.day)}`;
+      }
+
+      grid.innerHTML = '';
+
+      const firstDayUtc = new Date(Date.UTC(calendarViewYear, calendarViewMonth, 1));
+      const firstDayOfWeek = firstDayUtc.getUTCDay();
+      const startCol = (firstDayOfWeek + 6) % 7;
+      const daysInMonth = new Date(Date.UTC(calendarViewYear, calendarViewMonth + 1, 0)).getUTCDate();
+      const daysInPrevMonth = new Date(Date.UTC(calendarViewYear, calendarViewMonth, 0)).getUTCDate();
+
+      // 1. Trailing days from previous month
+      for (let i = startCol - 1; i >= 0; i--) {
+        const dayNum = daysInPrevMonth - i;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'h-9 rounded-lg text-slate-600 hover:text-slate-400 hover:bg-slate-800/50 flex flex-col items-center justify-center text-xs transition-colors cursor-pointer';
+        btn.textContent = dayNum;
+        const targetM = calendarViewMonth - 1;
+        const d = new Date(Date.UTC(calendarViewYear, targetM, dayNum, 12, 0, 0));
+        btn.onclick = () => {
+          setTimelineDate(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+          closeCalendarPopover();
+        };
+        grid.appendChild(btn);
+      }
+
+      // 2. Current month days
+      for (let d = 1; d <= daysInMonth; d++) {
+        const isToday = (today.year === calendarViewYear && today.month === calendarViewMonth && today.day === d);
+        const isSelected = (timelineDate.year === calendarViewYear && timelineDate.month === calendarViewMonth && timelineDate.day === d);
+
+        // Check if weekend in this timezone
+        const dayOfWeek = (startCol + d - 1) % 7; // 0=Mon ... 5=Sat, 6=Sun
+        const isWeekend = (dayOfWeek === 5 || dayOfWeek === 6);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+
+        let btnClasses = 'h-9 rounded-lg flex flex-col items-center justify-center relative font-semibold transition-all cursor-pointer ';
+        if (isSelected) {
+          btnClasses += 'bg-cyan-500 text-slate-950 font-black shadow-[0_0_12px_rgba(6,182,212,0.6)] z-10 ';
+        } else if (isToday) {
+          btnClasses += 'bg-slate-800 text-cyan-400 border border-cyan-500/50 hover:bg-slate-700 ';
+        } else {
+          btnClasses += 'text-slate-200 hover:bg-slate-800 hover:text-white ';
+        }
+
+        btn.className = btnClasses;
         
-        let weekday = '';
-        let dayMonth = '';
+        const spanNum = document.createElement('span');
+        spanNum.className = 'text-xs';
+        spanNum.textContent = d;
+        btn.appendChild(spanNum);
+
+        const dot = document.createElement('span');
+        if (isSelected) {
+          dot.className = `w-1 h-1 rounded-full ${isWeekend ? 'bg-emerald-950' : 'bg-slate-950'} mt-0.5`;
+        } else {
+          dot.className = `w-1.5 h-1.5 rounded-full ${isWeekend ? 'bg-emerald-400 shadow-[0_0_4px_#34d399]' : 'bg-rose-400/80'} mt-0.5`;
+        }
+        btn.appendChild(dot);
+
+        const thisDay = d;
+        btn.onclick = () => {
+          setTimelineDate(calendarViewYear, calendarViewMonth, thisDay);
+          closeCalendarPopover();
+        };
+        grid.appendChild(btn);
+      }
+
+      // 3. Leading days for next month to complete the row
+      const totalCells = startCol + daysInMonth;
+      const remaining = (7 - (totalCells % 7)) % 7;
+      for (let nextD = 1; nextD <= remaining; nextD++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'h-9 rounded-lg text-slate-600 hover:text-slate-400 hover:bg-slate-800/50 flex flex-col items-center justify-center text-xs transition-colors cursor-pointer';
+        btn.textContent = nextD;
+        const targetM = calendarViewMonth + 1;
+        const d = new Date(Date.UTC(calendarViewYear, targetM, nextD, 12, 0, 0));
+        btn.onclick = () => {
+          setTimelineDate(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+          closeCalendarPopover();
+        };
+        grid.appendChild(btn);
+      }
+
+      lucide.createIcons();
+    }
+
+    function updateTimelineControlsUI() {
+      if (!timelineDate) initTimelineDate();
+      const activeTz = getSelectedTimezone();
+      const today = getTodayInTimezone(activeTz);
+      
+      const isToday = (timelineDate.year === today.year && timelineDate.month === today.month && timelineDate.day === today.day);
+
+      const btnToday = document.getElementById('btn-timeline-today');
+      if (btnToday) {
+        if (isToday) {
+          btnToday.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.4)] transition-all flex items-center gap-1.5';
+        } else {
+          btnToday.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all flex items-center gap-1.5';
+        }
+      }
+
+      const btnLabel = document.getElementById('calendar-btn-label');
+      if (btnLabel) {
         try {
-          const wFmt = new Intl.DateTimeFormat('es-ES', { timeZone: activeTz, weekday: 'long' });
-          const dFmt = new Intl.DateTimeFormat('es-ES', { timeZone: activeTz, day: 'numeric', month: 'short' });
-          weekday = wFmt.format(targetDate);
-          dayMonth = dFmt.format(targetDate);
+          const targetDate = new Date(Date.UTC(timelineDate.year, timelineDate.month, timelineDate.day, 12, 0, 0));
+          const dFmt = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short' });
+          const wFmt = new Intl.DateTimeFormat('es-ES', { weekday: 'short' });
+          btnLabel.textContent = `${wFmt.format(targetDate)}, ${dFmt.format(targetDate)}`;
         } catch (e) {
-          weekday = offset === 0 ? 'Hoy' : 'Día ' + offset;
-          dayMonth = targetDate.toLocaleDateString();
+          btnLabel.textContent = `${timelineDate.day}/${timelineDate.month + 1}`;
         }
-
-        weekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-
-        let label = '';
-        if (offset === 0) label = `Hoy (${weekday}, ${dayMonth})`;
-        else if (offset === 1) label = `Mañana (${weekday}, ${dayMonth})`;
-        else if (offset === 2) label = `Pasado mañana (${weekday}, ${dayMonth})`;
-        else label = `${weekday}, ${dayMonth}`;
-
-        const isWeekend = (weekday.toLowerCase().includes('sábado') || weekday.toLowerCase().includes('domingo'));
-        if (isWeekend) {
-          label += ' — Finde 100% Off-Peak';
-        }
-
-        const opt = document.createElement('option');
-        opt.value = offset;
-        opt.textContent = label;
-        opt.className = "bg-slate-900 text-white";
-        if (offset === selectedDayOffset) opt.selected = true;
-        select.appendChild(opt);
       }
     }
 
@@ -1426,35 +1700,30 @@
 
     // Build the 24-Hour Timeline Bar
     function renderTimeline() {
+      if (!timelineDate) initTimelineDate();
       const container = document.getElementById('timeline-hours-bar');
+      if (!container) return;
       container.innerHTML = '';
       const activeTz = getSelectedTimezone();
-      const now = new Date();
+      const today = getTodayInTimezone(activeTz);
 
-      // Target Date calculation
-      const targetDate = new Date(now.getTime() + selectedDayOffset * 86400000);
-      let year = targetDate.getFullYear(), month = targetDate.getMonth(), day = targetDate.getDate();
+      const targetDate = new Date(Date.UTC(timelineDate.year, timelineDate.month, timelineDate.day, 12, 0, 0));
+      const todayUtc = new Date(Date.UTC(today.year, today.month, today.day, 12, 0, 0));
+      const dayOffset = Math.round((targetDate.getTime() - todayUtc.getTime()) / 86400000);
+
       let weekdayName = '', fullDateStr = '';
-
       try {
         const dtf = new Intl.DateTimeFormat('es-ES', {
           timeZone: activeTz,
           year: 'numeric',
-          month: 'numeric',
+          month: 'short',
           day: 'numeric',
           weekday: 'long'
         });
-        const parts = dtf.formatToParts(targetDate);
-        parts.forEach(p => {
-          if (p.type === 'year') year = parseInt(p.value, 10);
-          if (p.type === 'month') month = parseInt(p.value, 10) - 1;
-          if (p.type === 'day') day = parseInt(p.value, 10);
-          if (p.type === 'weekday') weekdayName = p.value;
-        });
-        const dateFmt = new Intl.DateTimeFormat('es-ES', { timeZone: activeTz, day: 'numeric', month: 'short' });
-        fullDateStr = `${weekdayName.charAt(0).toUpperCase() + weekdayName.slice(1)}, ${dateFmt.format(targetDate)}`;
+        fullDateStr = dtf.format(targetDate);
+        fullDateStr = fullDateStr.charAt(0).toUpperCase() + fullDateStr.slice(1);
       } catch (e) {
-        fullDateStr = targetDate.toLocaleDateString();
+        fullDateStr = `${timelineDate.day}/${timelineDate.month + 1}/${timelineDate.year}`;
       }
 
       // Update badge and sub-bar info
@@ -1462,23 +1731,37 @@
       const typeBadge = document.getElementById('selected-day-type-badge');
       const liveLegend = document.getElementById('live-indicator-legend');
 
-      if (selectedDayOffset === 0) {
+      if (dayOffset === 0) {
         badge.className = "px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30";
         badge.textContent = `Hoy (${fullDateStr})`;
         typeBadge.textContent = "Vista en tiempo real";
         if (liveLegend) liveLegend.classList.remove('hidden');
-      } else {
-        const titlePrefix = selectedDayOffset === 1 ? 'Mañana' : (selectedDayOffset === 2 ? 'Pasado mañana' : `En ${selectedDayOffset} días`);
+      } else if (dayOffset === -1) {
+        badge.className = "px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-slate-700/60 text-slate-300 border border-slate-600";
+        badge.textContent = `Ayer (${fullDateStr})`;
+        typeBadge.textContent = "Día pasado (Histórico)";
+        if (liveLegend) liveLegend.classList.add('hidden');
+      } else if (dayOffset < -1) {
+        badge.className = "px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-slate-700/60 text-slate-300 border border-slate-600";
+        badge.textContent = `Hace ${Math.abs(dayOffset)} días (${fullDateStr})`;
+        typeBadge.textContent = "Día pasado (Histórico)";
+        if (liveLegend) liveLegend.classList.add('hidden');
+      } else if (dayOffset === 1) {
         badge.className = "px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30";
-        badge.textContent = `${titlePrefix} (${fullDateStr})`;
-        typeBadge.textContent = "Proyección de horario";
+        badge.textContent = `Mañana (${fullDateStr})`;
+        typeBadge.textContent = "Proyección futura";
+        if (liveLegend) liveLegend.classList.add('hidden');
+      } else {
+        badge.className = "px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30";
+        badge.textContent = `En ${dayOffset} días (${fullDateStr})`;
+        typeBadge.textContent = "Proyección futura";
         if (liveLegend) liveLegend.classList.add('hidden');
       }
 
       let peakHoursList = [];
 
       for (let h = 0; h < 24; h++) {
-        const isPeak = isHourPeakOnDate(year, month, day, h, activeTz);
+        const isPeak = isHourPeakOnDate(timelineDate.year, timelineDate.month, timelineDate.day, h, activeTz);
         if (isPeak) {
           peakHoursList.push(h);
         }
@@ -1504,29 +1787,32 @@
 
       // Format peak intervals in local time for text display
       const convText = document.getElementById('timeline-local-conversion-text');
-      if (peakHoursList.length > 0) {
-        let ranges = [];
-        let start = peakHoursList[0];
-        let prev = peakHoursList[0];
-        for (let i = 1; i < peakHoursList.length; i++) {
-          if (peakHoursList[i] === prev + 1) {
-            prev = peakHoursList[i];
-          } else {
-            ranges.push(`${pad(start)}:00 a ${pad(prev + 1)}:00`);
-            start = peakHoursList[i];
-            prev = peakHoursList[i];
+      if (convText) {
+        if (peakHoursList.length > 0) {
+          let ranges = [];
+          let start = peakHoursList[0];
+          let prev = peakHoursList[0];
+          for (let i = 1; i < peakHoursList.length; i++) {
+            if (peakHoursList[i] === prev + 1) {
+              prev = peakHoursList[i];
+            } else {
+              ranges.push(`${pad(start)}:00 a ${pad(prev + 1)}:00`);
+              start = peakHoursList[i];
+              prev = peakHoursList[i];
+            }
           }
+          ranges.push(`${pad(start)}:00 a ${pad(prev + 1)}:00`);
+          const rangesHtml = formatRangesWithSeparator(ranges);
+          convText.innerHTML = 
+            `Horas Peak para <strong>${fullDateStr}</strong> en <strong>${getTimezoneDisplayName(activeTz)}</strong>: ${rangesHtml} <span class="text-slate-400">(${peakHoursList.length}h Peak, ${24 - peakHoursList.length}h Off-Peak)</span>`;
+        } else {
+          convText.innerHTML = 
+            `🎉 <strong class="text-emerald-400">¡${fullDateStr} es 100% OFF-PEAK!</strong> Todo el día cuenta con tarifa reducida del 50% en tokens DeepSeek.`;
         }
-        ranges.push(`${pad(start)}:00 a ${pad(prev + 1)}:00`);
-        const rangesHtml = formatRangesWithSeparator(ranges);
-        convText.innerHTML = 
-          `Horas Peak para <strong>${fullDateStr}</strong> en <strong>${getTimezoneDisplayName(activeTz)}</strong>: ${rangesHtml} <span class="text-slate-400">(${peakHoursList.length}h Peak, ${24 - peakHoursList.length}h Off-Peak)</span>`;
-      } else {
-        convText.innerHTML = 
-          `🎉 <strong class="text-emerald-400">¡${fullDateStr} es 100% OFF-PEAK!</strong> Todo el día cuenta con tarifa reducida del 50% en tokens DeepSeek.`;
       }
 
-      updateTimelineMarker(now, activeTz);
+      updateTimelineMarker(new Date(), activeTz);
+      updateTimelineControlsUI();
     }
 
     // Position the current marker on the 24h bar
@@ -1535,7 +1821,7 @@
       if (!marker) return;
 
       // Only show marker on today's timeline
-      if (selectedDayOffset !== 0) {
+      if (!isTimelineDateToday()) {
         marker.classList.add('hidden');
         return;
       }
@@ -1683,8 +1969,8 @@
     // Refresh all views
     function refreshData() {
       drawWallClockSegments();
-      populateDaySelectorOptions();
       renderTimeline();
+      renderCalendarGrid();
       renderWeeklyTable();
       updateLiveStatus();
       updateCalculator();
@@ -1696,20 +1982,25 @@
       refreshData();
     });
 
-    const daySelectElem = document.getElementById('timeline-day-select');
-    if (daySelectElem) {
-      daySelectElem.addEventListener('change', (e) => {
-        setDayOffset(e.target.value);
-      });
-    }
-
     document.getElementById('calc-model').addEventListener('change', updateCalculator);
     document.getElementById('range-input-tokens').addEventListener('input', updateCalculator);
     document.getElementById('range-output-tokens').addEventListener('input', updateCalculator);
     document.getElementById('range-cache-tokens').addEventListener('input', updateCalculator);
 
+    // Close calendar popover on outside click
+    window.addEventListener('click', (e) => {
+      const popover = document.getElementById('calendar-popover');
+      const toggleBtn = document.getElementById('btn-calendar-toggle');
+      if (popover && !popover.classList.contains('hidden')) {
+        if (!popover.contains(e.target) && (!toggleBtn || !toggleBtn.contains(e.target))) {
+          closeCalendarPopover();
+        }
+      }
+    });
+
     // Initial setup
     window.addEventListener('DOMContentLoaded', () => {
+      initTimelineDate();
       lucide.createIcons();
       refreshData();
       // Tick every second
