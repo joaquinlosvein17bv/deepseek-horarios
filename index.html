@@ -1139,21 +1139,12 @@
               <path id="lightning-bolt-core" d="M16 0 L17.5 24 L14.5 50 L18 76 L15 98 L16 120" fill="none" stroke="#ffffff"
                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 style="transition: d 1.4s ease-in-out;" />
-              <!-- Chispas de energía laterales suaves -->
-              <circle id="spark-1" cx="20" cy="32" r="1.5" fill="#67e8f9" opacity="0.8" />
-              <circle id="spark-2" cx="12" cy="64" r="1.2" fill="#ffffff" opacity="0.9" />
-              <circle id="spark-3" cx="19" cy="88" r="1.5" fill="#34d399" opacity="0.8" />
             </svg>
 
             <!-- Badge Superior Electrificado "⚡ AHORA" -->
             <div
               class="absolute top-0.5 -translate-x-1/2 px-2 py-0.5 bg-gradient-to-r from-cyan-400 via-sky-300 to-emerald-300 text-slate-950 font-extrabold text-[8.5px] sm:text-[9px] rounded-full font-mono shadow-[0_0_12px_#22d3ee] flex items-center gap-0.5 border border-white whitespace-nowrap">
               <span>⚡ AHORA</span>
-            </div>
-
-            <!-- Punto de impacto inferior del rayo -->
-            <div
-              class="absolute bottom-1 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_10px_#22d3ee] ring-1.5 ring-cyan-400">
             </div>
           </div>
         </div>
@@ -2944,14 +2935,6 @@
 
         core.setAttribute('d', d);
         glow.setAttribute('d', d);
-
-        // Chispas laterales suaves
-        const s1 = document.getElementById('spark-1');
-        const s2 = document.getElementById('spark-2');
-        const s3 = document.getElementById('spark-3');
-        if (s1) { s1.setAttribute('cx', (18 + (Math.random() - 0.5) * 4).toFixed(1)); }
-        if (s2) { s2.setAttribute('cx', (13 + (Math.random() - 0.5) * 4).toFixed(1)); }
-        if (s3) { s3.setAttribute('cx', (18 + (Math.random() - 0.5) * 4).toFixed(1)); }
       }, 1600);
     }
 
