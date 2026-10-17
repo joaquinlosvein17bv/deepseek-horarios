@@ -174,6 +174,32 @@
       }
     }
 
+    @keyframes sonarPulse {
+      0% {
+        transform: scale(0.8);
+        opacity: 0.85;
+      }
+
+      100% {
+        transform: scale(2.1);
+        opacity: 0;
+      }
+    }
+
+    @keyframes electricFlicker {
+
+      0%,
+      100% {
+        opacity: 1;
+        filter: drop-shadow(0 0 10px #22d3ee) drop-shadow(0 0 20px #38bdf8);
+      }
+
+      50% {
+        opacity: 0.82;
+        filter: drop-shadow(0 0 16px #67e8f9) drop-shadow(0 0 28px #0ea5e9);
+      }
+    }
+
     .orbit-cw {
       animation: spinSlow 28s linear infinite;
       transform-origin: center;
@@ -190,38 +216,38 @@
     }
 
     /* =======================================================
-       MODO BLUEPRINT / INSPECTOR DE VECTORES (MOTION GRAPHICS)
+       VECTORES Y HUD SIEMPRE ACTIVOS (CLEAN PERMANENT HUD)
        ======================================================= */
-    body.blueprint-mode {
-      background-image:
-        linear-gradient(to right, rgba(34, 211, 238, 0.09) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(34, 211, 238, 0.09) 1px, transparent 1px);
-      background-size: 24px 24px;
-    }
-
-    .blueprint-only {
-      opacity: 0;
+    .hud-vector-guide {
+      opacity: 0.58;
       pointer-events: none;
       transition: opacity 0.3s ease;
     }
 
-    body.blueprint-mode .blueprint-only {
-      opacity: 1;
+    .chrono-card:hover .hud-vector-guide {
+      opacity: 0.9;
     }
 
-    body.blueprint-mode .chrono-card {
-      border-color: rgba(34, 211, 238, 0.45) !important;
-      background: rgba(5, 10, 22, 0.92) !important;
+    .mg-vector-shape {
+      stroke-dasharray: 5 3;
     }
 
-    body.blueprint-mode .mg-vector-shape {
-      stroke-dasharray: 4 3 !important;
-      stroke: #22d3ee !important;
+    /* Tipografía cinética limpia (SIN rectángulos ni bordes alrededor) */
+    .kinetic-word {
+      outline: none !important;
+      border: none !important;
+      background: transparent !important;
+      text-shadow: 0 0 24px rgba(34, 211, 238, 0.25);
     }
 
-    body.blueprint-mode .kinetic-word {
-      outline: 1px dashed rgba(34, 211, 238, 0.5);
-      background: rgba(34, 211, 238, 0.05);
+    /* Rayo Eléctrico y Resplandor en la Línea de Tiempo 24H */
+    .electric-bolt-svg {
+      animation: electricFlicker 0.18s infinite alternate;
+    }
+
+    .timeline-hour-cell {
+      will-change: transform, box-shadow, opacity;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     /* Custom scrollbars */
@@ -330,19 +356,12 @@
           </select>
         </div>
 
-        <!-- Botón Modo Blueprint / Vectores (Motion Graphics Inspector) -->
-        <button id="btn-blueprint-mode" type="button" onclick="toggleBlueprintMode()"
-          class="px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/70 text-slate-300 hover:text-cyan-300 text-xs font-mono flex items-center gap-2 transition-all"
-          title="Inspeccionar vectores, nodos y guías técnicas">
-          <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="6" height="6" rx="1" />
-            <rect x="15" y="3" width="6" height="6" rx="1" />
-            <rect x="9" y="15" width="6" height="6" rx="1" />
-            <path d="M9 6h6M6 9v6l3 3M18 9v6l-3 3" />
-          </svg>
-          <span class="hidden md:inline">Vectores / HUD</span>
-          <span id="blueprint-dot" class="w-2 h-2 rounded-full bg-slate-600 transition-colors"></span>
-        </button>
+        <!-- Indicador Permanente HUD Vectorial Activo -->
+        <div
+          class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-cyan-500/30 text-cyan-300 text-[11px] font-mono shadow-inner">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse"></span>
+          <span>HUD VECTOR // ON</span>
+        </div>
 
         <!-- Botón Replay Motion Graphics / Actualizar -->
         <button id="btn-refresh-motion" type="button" onclick="refreshData(true)"
@@ -429,27 +448,27 @@
                   Automático)</span>
               </div>
             </div>
-
-            <!-- Contenedor del Reloj + Anillo Orbital SVG de Telemetría -->
+            <!-- Contenedor del Reloj + Anillo Orbital SVG de Telemetría Permanente -->
             <div class="relative flex items-center justify-center p-3">
-              <!-- Anillo de Telemetría Orbital Exterior (Motion Graphics) -->
+              <!-- Anillo de Telemetría Orbital Exterior (Motion Graphics Siempre Activo) -->
               <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 360 360">
                 <g class="orbit-cw" style="transform-origin: 180px 180px;">
-                  <circle cx="180" cy="180" r="174" fill="none" stroke="rgba(34, 211, 238, 0.25)" stroke-width="1"
-                    stroke-dasharray="4 10" />
-                  <circle cx="180" cy="6" r="3" fill="#22d3ee" />
-                  <circle cx="180" cy="354" r="3" fill="#10b981" />
+                  <circle cx="180" cy="180" r="174" fill="none" stroke="rgba(34, 211, 238, 0.38)" stroke-width="1.2"
+                    stroke-dasharray="5 9" />
+                  <circle cx="180" cy="6" r="3.5" fill="#22d3ee" />
+                  <circle cx="180" cy="354" r="3.5" fill="#10b981" />
                 </g>
                 <g class="orbit-ccw" style="transform-origin: 180px 180px;">
-                  <circle cx="180" cy="180" r="168" fill="none" stroke="rgba(16, 185, 129, 0.2)" stroke-width="1.5"
+                  <circle cx="180" cy="180" r="168" fill="none" stroke="rgba(16, 185, 129, 0.32)" stroke-width="1.5"
                     stroke-dasharray="45 180" stroke-linecap="round" />
                 </g>
-                <!-- Guías adicionales visibles en Modo Blueprint -->
-                <g class="blueprint-only" stroke="#22d3ee" stroke-width="0.8" stroke-dasharray="2 3">
+                <!-- Guías técnicas HUD siempre visibles -->
+                <g class="hud-vector-guide" stroke="#22d3ee" stroke-width="0.75" stroke-dasharray="2 4">
                   <line x1="180" y1="0" x2="180" y2="360" />
                   <line x1="0" y1="180" x2="360" y2="180" />
-                  <text x="185" y="14" fill="#22d3ee" font-family="JetBrains Mono" font-size="8">0° N-SYNC</text>
-                  <text x="295" y="176" fill="#22d3ee" font-family="JetBrains Mono" font-size="8">90° E</text>
+                  <circle cx="180" cy="180" r="159" fill="none" stroke="rgba(34,211,238,0.25)" />
+                  <text x="186" y="13" fill="#22d3ee" font-family="JetBrains Mono" font-size="7.5">0° SYNC</text>
+                  <text x="308" y="176" fill="#22d3ee" font-family="JetBrains Mono" font-size="7.5">90° E</text>
                 </g>
               </svg>
 
@@ -655,78 +674,240 @@
         </div>
       </div>
 
-      <!-- Quick Summary / Rule Card + Visual Radar Ratio -->
-      <div class="lg:col-span-5 chrono-card rounded-2xl p-6 flex flex-col justify-between">
-        <span class="hud-corner hud-tl"></span>
-        <span class="hud-corner hud-tr"></span>
-        <span class="hud-corner hud-bl"></span>
-        <span class="hud-corner hud-br"></span>
+      <!-- Columna Derecha (lg:col-span-5): Playground Interactivo DeepSeek + Regla Oficial Compacta -->
+      <div class="lg:col-span-5 flex flex-col gap-5 justify-between">
 
-        <div>
-          <div class="flex items-center justify-between gap-2 mb-3">
+        <!-- 1. NÚCLEO INTERACTIVO DEEPSEEK (PLAYGROUND MOTION GRAPHICS) -->
+        <div id="deepseek-playground-card"
+          class="chrono-card rounded-2xl p-5 relative overflow-hidden flex-1 flex flex-col justify-between select-none">
+          <span class="hud-corner hud-tl"></span>
+          <span class="hud-corner hud-tr"></span>
+          <span class="hud-corner hud-bl"></span>
+          <span class="hud-corner hud-br"></span>
+
+          <!-- Cabecera del Playground -->
+          <div class="flex items-center justify-between gap-2 z-10">
             <div class="flex items-center gap-2">
-              <i data-lucide="cpu" class="w-5 h-5 text-cyan-400"></i>
-              <h3 class="font-display text-base font-bold text-white">Regla Oficial de Horarios OpenCode Go</h3>
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee] animate-ping"></span>
+              <h3 class="font-display text-sm sm:text-base font-bold text-white tracking-tight">Núcleo Interactivo
+                DeepSeek</h3>
+            </div>
+            <div
+              class="flex items-center gap-1.5 bg-slate-900/90 border border-cyan-500/30 rounded-lg px-2.5 py-1 font-mono text-[11px]">
+              <span class="text-slate-400">Pulsos:</span>
+              <span id="whale-pulse-counter" class="text-cyan-400 font-extrabold">0</span>
+            </div>
+          </div>
+
+          <!-- Escenario Interactivo 3D con la Ciber-Ballena Vectorial de DeepSeek -->
+          <div id="whale-interactive-stage" onclick="triggerDeepSeekWhalePulse(event)"
+            class="relative my-2 h-52 sm:h-56 w-full rounded-xl bg-slate-950/85 border border-slate-800/90 hover:border-cyan-500/50 flex items-center justify-center overflow-hidden cursor-pointer group transition-colors shadow-inner"
+            title="Mueve el mouse y haz clic sobre la ballena DeepSeek para interactuar">
+
+            <!-- Fondo de coordenadas y retícula HUD permanente -->
+            <div
+              class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.16)_0%,transparent_70%)] pointer-events-none">
+            </div>
+
+            <!-- Coordenadas en vivo del cursor -->
+            <div class="absolute top-2.5 left-3 font-mono text-[9px] text-cyan-400/80 space-y-0.5 pointer-events-none">
+              <div id="whale-hud-coords">POS // X: 000 Y: 000</div>
+              <div id="whale-hud-mode" class="text-emerald-400">ENGINE // NEURAL-IDLE</div>
+            </div>
+            <div class="absolute top-2.5 right-3 font-mono text-[9px] text-slate-400 pointer-events-none">
+              <span>CLICK O MUEVE EL CURSOR</span>
+            </div>
+
+            <!-- SVG Principal: Ciber-Ballena DeepSeek (Logo Oficial 100% Idéntico) + HUD Telemetría -->
+            <svg id="deepseek-whale-svg" viewBox="0 0 320 200"
+              class="w-full h-full max-w-[310px] overflow-visible relative z-10">
+              <defs>
+                <!-- Gradiente principal: Azules oficiales DeepSeek -->
+                <linearGradient id="deepseekWhaleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#6b8aff" />
+                  <stop offset="35%" stop-color="#4D6BFE" />
+                  <stop offset="70%" stop-color="#2c52ed" />
+                  <stop offset="100%" stop-color="#1a3ab8" />
+                </linearGradient>
+                <!-- Gradiente del vientre: Blanco puro con suave tinte de luz azulada -->
+                <linearGradient id="deepseekBellyGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98" />
+                  <stop offset="55%" stop-color="#f0f6ff" stop-opacity="0.96" />
+                  <stop offset="100%" stop-color="#d9e8ff" stop-opacity="0.92" />
+                </linearGradient>
+                <!-- Gradiente secundario para reflejos -->
+                <linearGradient id="whaleHighlightGrad" x1="0%" y1="0%" x2="50%" y2="100%">
+                  <stop offset="0%" stop-color="#93c5fd" stop-opacity="0.6" />
+                  <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
+                </linearGradient>
+                <!-- Filtro de resplandor neón DeepSeek -->
+                <filter id="whaleNeonGlow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <!-- Filtro de brillo suave para el ojo -->
+                <filter id="whaleEyeGlow" x="-60%" y="-60%" width="220%" height="220%">
+                  <feGaussianBlur stdDeviation="1.8" result="glow" />
+                  <feMerge>
+                    <feMergeNode in="glow" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <!-- Filtro de brillo para el chorro -->
+                <filter id="spoutGlow" x="-40%" y="-40%" width="180%" height="180%">
+                  <feGaussianBlur stdDeviation="2" result="glow" />
+                  <feMerge>
+                    <feMergeNode in="glow" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <!-- Capa de Ondas de Sonar (Shockwaves dinámicas) -->
+              <g id="whale-sonar-rings"></g>
+
+              <!-- Anillos HUD Orbitales de Fondo -->
+              <g id="whale-orbit-layer" style="transform-origin: 160px 100px;">
+                <ellipse cx="160" cy="108" rx="130" ry="56" fill="none" stroke="rgba(77, 107, 254, 0.22)"
+                  stroke-width="1" stroke-dasharray="6 10" />
+                <circle cx="160" cy="100" r="82" fill="none" stroke="rgba(99, 102, 241, 0.22)" stroke-width="1.2"
+                  stroke-dasharray="20 14" class="orbit-cw" style="transform-origin: 160px 100px;" />
+                <circle cx="160" cy="100" r="65" fill="none" stroke="rgba(59, 130, 246, 0.18)" stroke-width="1"
+                  stroke-dasharray="4 10" class="orbit-ccw" style="transform-origin: 160px 100px;" />
+                <!-- Puntos orbitales -->
+                <circle cx="38" cy="93" r="2.5" fill="#3b82f6" opacity="0.8" />
+                <circle cx="282" cy="112" r="2" fill="#60a5fa" opacity="0.7" />
+                <circle cx="160" cy="18" r="1.8" fill="#93c5fd" opacity="0.5" />
+              </g>
+
+              <!-- ============================================================ -->
+              <!-- GRUPO PRINCIPAL: Ciber-Ballena DeepSeek (Logo Oficial 100% Fiel) -->
+              <!-- Silueta auténtica del vector oficial DeepSeek + Motion Graphics -->
+              <!-- ============================================================ -->
+              <g id="whale-hero-group" style="transform-origin: 160px 100px;">
+
+                <!-- Sombra de energía difusa inferior -->
+                <ellipse id="whale-shadow" cx="160" cy="168" rx="58" ry="7" fill="rgba(37, 99, 235, 0.2)" />
+
+                <!-- Vector Maestro Oficial de DeepSeek (Escalado y Centrado) -->
+                <g id="whale-vector-container" transform="translate(160, 98) scale(7.4) translate(-16, -15.5)">
+                  <!-- 1. Silueta Principal del Cuerpo DeepSeek (Azul Oficial #4D6BFE) -->
+                  <path id="whale-body-path"
+                    d="M27.501 8.46875C27.249 8.3457 27.1406 8.58008 26.9932 8.69922C26.9434 8.73828 26.9004 8.78906 26.8584 8.83398C26.4902 9.22852 26.0605 9.48633 25.5 9.45508C24.6787 9.41016 23.9785 9.66797 23.3594 10.2969C23.2275 9.52148 22.79 9.05859 22.125 8.76172C21.7764 8.60742 21.4238 8.45312 21.1807 8.11719C21.0098 7.87891 20.9639 7.61328 20.8779 7.35156C20.8242 7.19336 20.7695 7.03125 20.5879 7.00391C20.3906 6.97266 20.3135 7.13867 20.2363 7.27734C19.9258 7.84375 19.8066 8.46875 19.8174 9.10156C19.8447 10.5234 20.4453 11.6562 21.6367 12.4629C21.7725 12.5547 21.8076 12.6484 21.7646 12.7832C21.6836 13.0605 21.5869 13.3301 21.501 13.6074C21.4473 13.7852 21.3662 13.8242 21.1768 13.7461C20.5225 13.4727 19.957 13.0684 19.458 12.5781C18.6104 11.7578 17.8438 10.8516 16.8877 10.1426C16.6631 9.97656 16.4395 9.82227 16.207 9.67578C15.2314 8.72656 16.335 7.94727 16.5898 7.85547C16.8574 7.75977 16.6826 7.42773 15.8193 7.43164C14.957 7.43555 14.167 7.72461 13.1611 8.10938C13.0137 8.16797 12.8594 8.21094 12.7002 8.24414C11.7871 8.07227 10.8389 8.0332 9.84766 8.14453C7.98242 8.35352 6.49219 9.23633 5.39648 10.7441C4.08105 12.5547 3.77148 14.6133 4.15039 16.7617C4.54883 19.0234 5.70215 20.8984 7.47559 22.3633C9.31348 23.8809 11.4307 24.625 13.8457 24.4824C15.3125 24.3984 16.9463 24.2012 18.7881 22.6406C19.2529 22.8711 19.7402 22.9629 20.5498 23.0332C21.1729 23.0918 21.7725 23.002 22.2373 22.9062C22.9648 22.752 22.9141 22.0781 22.6514 21.9531C20.5186 20.959 20.9863 21.3633 20.5605 21.0371C21.6445 19.752 23.2783 18.418 23.917 14.0977C23.9668 13.7539 23.9238 13.5391 23.917 13.2598C23.9131 13.0918 23.9512 13.0254 24.1445 13.0059C24.6787 12.9453 25.1973 12.7988 25.6738 12.5352C27.0557 11.7793 27.6123 10.5391 27.7441 9.05078C27.7637 8.82422 27.7402 8.58789 27.501 8.46875Z"
+                    fill="url(#deepseekWhaleGrad)" stroke="#6888ff" stroke-width="0.22" stroke-linejoin="round"
+                    filter="url(#whaleNeonGlow)" />
+
+                  <!-- 2. Vientre Blanco DeepSeek (Curva Oficial Idéntica al Logo) -->
+                  <path id="whale-belly-path"
+                    d="M15.46 21.8613C13.3926 20.2344 12.3906 19.6992 11.9766 19.7227C11.5898 19.7441 11.6592 20.1875 11.7441 20.4766C11.833 20.7617 11.9492 20.959 12.1123 21.209C12.2246 21.375 12.3018 21.623 12 21.8066C11.334 22.2207 10.1768 21.668 10.1221 21.6406C8.77539 20.8477 7.64941 19.7988 6.85547 18.3652C6.08984 16.9844 5.64453 15.5039 5.57129 13.9238C5.55176 13.541 5.66406 13.4062 6.04297 13.3379C6.54199 13.2461 7.05762 13.2266 7.55664 13.2988C9.66602 13.6074 11.4619 14.5527 12.9668 16.0469C13.8262 16.9004 14.4766 17.918 15.1465 18.9121C15.8584 19.9688 16.625 20.9746 17.6006 21.7988C17.9443 22.0879 18.2197 22.3086 18.4824 22.4707C17.6895 22.5586 16.3652 22.5781 15.46 21.8613Z"
+                    fill="url(#deepseekBellyGrad)" stroke="#ffffff" stroke-width="0.12" />
+
+                  <!-- 3. Red Neuronal / Circuitos Ciber sobre el Lomo (Sutil y Tecnológico) -->
+                  <g id="whale-neural-mesh" stroke="#bfdbfe" stroke-width="0.08" opacity="0.4">
+                    <line x1="8.5" y1="12" x2="11.5" y2="10" />
+                    <line x1="11.5" y1="10" x2="14.8" y2="9.5" />
+                    <line x1="14.8" y1="9.5" x2="18.2" y2="11.2" />
+                    <line x1="18.2" y1="11.2" x2="21.5" y2="10" />
+                    <circle cx="8.5" cy="12" r="0.25" fill="#60a5fa" stroke="none" />
+                    <circle cx="11.5" cy="10" r="0.32" fill="#ffffff" stroke="none" />
+                    <circle cx="14.8" cy="9.5" r="0.28" fill="#93c5fd" stroke="none" />
+                    <circle cx="18.2" cy="11.2" r="0.32" fill="#60a5fa" stroke="none" />
+                    <circle cx="21.5" cy="10" r="0.25" fill="#93c5fd" stroke="none" />
+                  </g>
+
+                  <!-- 4. Ojo Oficial DeepSeek (Mancha blanca y punto pupilar 100% integrados al logo) -->
+                  <path id="whale-eye"
+                    d="M19.5273 17.0625C19.3301 17.1426 19.1328 17.2129 18.9434 17.2207C18.6494 17.2344 18.3281 17.1152 18.1533 16.9688C17.8828 16.7422 17.6895 16.6152 17.6074 16.2168C17.5732 16.0469 17.5928 15.7852 17.623 15.6348C17.6934 15.3105 17.6152 15.1035 17.3877 14.9141C17.2012 14.7598 16.9658 14.7188 16.7061 14.7188C16.6094 14.7188 16.5205 14.6758 16.4541 14.6406C16.3457 14.5859 16.2568 14.4512 16.3418 14.2852C16.3691 14.2324 16.501 14.1016 16.5322 14.0781C16.8838 13.877 17.29 13.9434 17.666 14.0938C18.0146 14.2363 18.2773 14.498 18.6562 14.8672C19.0439 15.3145 19.1133 15.4395 19.334 15.7734C19.5078 16.0371 19.667 16.3066 19.7754 16.6152C19.8408 16.8066 19.7559 16.9648 19.5273 17.0625ZM16.4502 15.4805C16.4502 15.3105 16.5859 15.1758 16.7568 15.1758C16.7949 15.1758 16.8301 15.1836 16.8613 15.1953C16.9033 15.2109 16.9424 15.2344 16.9727 15.2695C17.0273 15.3223 17.0586 15.4004 17.0586 15.4805C17.0586 15.6504 16.9229 15.7852 16.7529 15.7852C16.582 15.7852 16.4502 15.6504 16.4502 15.4805Z"
+                    fill="#ffffff" filter="url(#whaleEyeGlow)" />
+                </g>
+              </g>
+
+              <!-- Capa de Explosión de Partículas al hacer clic -->
+              <g id="whale-particles-layer"></g>
+            </svg>
+
+            <!-- Etiqueta inferior flotante -->
+            <div
+              class="absolute bottom-2 inset-x-3 flex items-center justify-between text-[10px] font-mono text-slate-400 pointer-events-none">
+              <span>MODELO: <strong class="text-cyan-300">DEEPSEEK-V4.1</strong></span>
+              <span id="whale-status-tag" class="text-emerald-400 font-bold">● INTERACTIVO</span>
+            </div>
+          </div>
+
+          <!-- Botones de Acción del Playground -->
+          <div class="grid grid-cols-3 gap-2 pt-1 z-10">
+            <button type="button" onclick="triggerDeepSeekWhalePulse(event, 'pulse')"
+              class="px-2.5 py-2 rounded-xl bg-slate-900/90 hover:bg-cyan-500/20 border border-slate-700/80 hover:border-cyan-500/50 text-[11px] font-mono font-bold text-cyan-300 transition-all flex items-center justify-center gap-1.5 active:scale-95">
+              <span>⚡ Pulso</span>
+            </button>
+            <button type="button" onclick="triggerDeepSeekWhalePulse(event, 'sonar')"
+              class="px-2.5 py-2 rounded-xl bg-slate-900/90 hover:bg-emerald-500/20 border border-slate-700/80 hover:border-emerald-500/50 text-[11px] font-mono font-bold text-emerald-300 transition-all flex items-center justify-center gap-1.5 active:scale-95">
+              <span>🌊 Sonar</span>
+            </button>
+            <button type="button" onclick="triggerDeepSeekWhalePulse(event, 'overdrive')"
+              class="px-2.5 py-2 rounded-xl bg-slate-900/90 hover:bg-purple-500/20 border border-slate-700/80 hover:border-purple-500/50 text-[11px] font-mono font-bold text-purple-300 transition-all flex items-center justify-center gap-1.5 active:scale-95">
+              <span>🚀 Overdrive</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. REGLA OFICIAL DE HORARIOS OPENCODE GO (VERSIÓN COMPACTA Y DENSA) -->
+        <div class="chrono-card rounded-2xl p-4 flex flex-col justify-between">
+          <span class="hud-corner hud-tl"></span>
+          <span class="hud-corner hud-tr"></span>
+          <span class="hud-corner hud-bl"></span>
+          <span class="hud-corner hud-br"></span>
+
+          <div class="flex items-center justify-between gap-2 mb-2.5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
+              <h3 class="font-display text-sm font-bold text-white">Regla Oficial de Horarios OpenCode Go</h3>
             </div>
             <span
-              class="font-mono text-[10px] text-slate-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">SPEC
-              // v4.1</span>
+              class="font-mono text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">79.2%
+              OFF-PEAK</span>
           </div>
 
-          <div
-            class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3.5 mb-4 text-xs font-mono text-slate-300 space-y-1.5">
-            <div class="flex items-start gap-2">
-              <span class="text-rose-400 font-bold">🔴 Peak:</span>
-              <span><strong>01:00 - 04:00 UTC</strong> y <strong>06:00 - 10:00 UTC</strong></span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2.5 text-[11px] font-mono">
+            <div class="bg-rose-950/25 border border-rose-500/30 rounded-xl p-2.5">
+              <div class="text-rose-400 font-bold flex items-center justify-between">
+                <span>🔴 PEAK (Lun-Vie)</span>
+                <span class="text-[10px] text-slate-400">7h/día</span>
+              </div>
+              <div class="text-slate-200 mt-1 text-[10px]">01:00-04:00 y 06:00-10:00 UTC</div>
             </div>
-            <div class="text-[11px] text-slate-400 pl-6">
-              (Aplica únicamente de Lunes a Viernes)
-            </div>
-            <div class="flex items-start gap-2 pt-1.5 border-t border-slate-800">
-              <span class="text-emerald-400 font-bold">🟢 Off-Peak:</span>
-              <span><strong>Todas las demás horas</strong> + Fines de semana enteros (100%)</span>
+            <div class="bg-emerald-950/25 border border-emerald-500/30 rounded-xl p-2.5">
+              <div class="text-emerald-400 font-bold flex items-center justify-between">
+                <span>🟢 OFF-PEAK (-50%)</span>
+                <span class="text-[10px] text-emerald-300">17h + Findes</span>
+              </div>
+              <div class="text-slate-200 mt-1 text-[10px]">Resto del día + Sáb/Dom 100%</div>
             </div>
           </div>
 
-          <p class="text-xs text-slate-300 leading-relaxed mb-4">
-            Durante <strong>Off-Peak</strong>, los tokens de entrada, salida y caché para los modelos DeepSeek cuestan
-            exactamente la <strong>mitad (50% de descuento)</strong>.
-          </p>
-
-          <!-- Gráfico Vectorial de Proporción Semanal (133h Off-Peak vs 35h Peak) -->
-          <div class="bg-slate-950/80 border border-slate-800/90 rounded-xl p-3.5 mb-4">
-            <div class="flex items-center justify-between text-xs mb-2">
-              <span class="font-mono text-[11px] text-slate-300 font-semibold">PROPORCIÓN SEMANAL (168 HORAS)</span>
-              <span class="font-mono text-xs font-bold text-emerald-400">79.2% OFF-PEAK</span>
-            </div>
-            <!-- Barra segmentada animada con GSAP -->
-            <div class="h-3 w-full rounded-full bg-slate-900 overflow-hidden flex p-0.5 border border-slate-800 gap-1">
+          <!-- Barra de Proporción Semanal Compacta -->
+          <div>
+            <div
+              class="h-2 w-full rounded-full bg-slate-900 overflow-hidden flex p-0.5 border border-slate-800 gap-0.5">
               <div id="weekly-ratio-offpeak-bar"
-                class="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 rounded-l-full" style="width: 0%;"></div>
-              <div id="weekly-ratio-peak-bar" class="h-full bg-rose-500 rounded-r-full" style="width: 0%;"></div>
+                class="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 rounded-l-full" style="width: 79.2%;"></div>
+              <div id="weekly-ratio-peak-bar" class="h-full bg-rose-500 rounded-r-full" style="width: 20.8%;"></div>
             </div>
-            <div class="flex justify-between text-[10px] font-mono text-slate-400 mt-1.5">
-              <span class="text-emerald-400">🟢 133 horas con -50% Descuento</span>
-              <span class="text-rose-400">🔴 Solo 35 horas Peak</span>
+            <div class="flex justify-between text-[10px] font-mono text-slate-400 mt-1">
+              <span class="text-emerald-400">🟢 133h sem. con 50% Descuento</span>
+              <span class="text-rose-400">🔴 35h sem. Peak</span>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-2.5 pt-3 border-t border-slate-800/80 text-xs">
-          <div class="bg-emerald-950/20 border border-emerald-500/25 rounded-xl p-3">
-            <span class="text-emerald-400 font-display font-bold block mb-0.5">Off-Peak (Ahorro)</span>
-            <span class="text-slate-300 text-[11px]">17h diarias Lun-Vie + 48h fin de semana</span>
-          </div>
-          <div class="bg-rose-950/20 border border-rose-500/25 rounded-xl p-3">
-            <span class="text-rose-400 font-display font-bold block mb-0.5">Peak (Estándar)</span>
-            <span class="text-slate-300 text-[11px]">Solo 7 horas diarias de Lunes a Viernes</span>
-          </div>
-        </div>
       </div>
     </section>
 
     <!-- =====================================================================
-         SECCIÓN 2: LÍNEA DE TIEMPO DIARIA (24 HORAS) CON WAVE STAGGER GSAP
+         SECCIÓN 2: LÍNEA DE TIEMPO DIARIA (24 HORAS) CON RAYO ELÉCTRICO Y PROXIMIDAD
          ===================================================================== -->
     <section class="chrono-card rounded-2xl p-6 relative z-20">
       <span class="hud-corner hud-tl"></span>
@@ -917,28 +1098,62 @@
           </div>
           <div id="live-indicator-legend" class="flex items-center gap-1.5">
             <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 ring-2 ring-cyan-400/40 animate-pulse"></span>
-            <span class="text-cyan-300 font-medium">Láser Hora Actual</span>
+            <span class="text-cyan-300 font-medium">⚡ Rayo Hora Actual + Luz de Proximidad</span>
           </div>
         </div>
       </div>
 
-      <!-- 24-hour visual strip -->
+      <!-- 24-hour visual strip con Rayo Eléctrico y Escalado de Proximidad -->
       <div class="space-y-3">
         <!-- Interactive Strip -->
-        <div class="relative bg-slate-950/90 rounded-2xl p-2.5 border border-slate-800/90 overflow-x-auto shadow-inner">
-          <div class="grid grid-cols-24 gap-1.5 min-w-[760px] relative py-1"
-            style="display: grid; grid-template-columns: repeat(24, minmax(0, 1fr));" id="timeline-hours-bar">
-            <!-- Dynamically generated 24 hour cells with GSAP wave stagger -->
+        <div id="timeline-strip-wrapper"
+          class="relative bg-slate-950/95 rounded-2xl px-2.5 sm:px-3 py-4 sm:py-5 border border-slate-800/90 overflow-hidden w-full shadow-[inset_0_0_35px_rgba(0,0,0,0.85)]">
+
+          <!-- Halo de Luz / Spotlight Radial que ilumina las secciones cercanas al rayo -->
+          <div id="timeline-spotlight-glow"
+            class="absolute top-0 bottom-0 w-64 -translate-x-1/2 pointer-events-none transition-all duration-700 hidden z-0"
+            style="left: 0%; background: radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.28) 0%, rgba(16, 185, 129, 0.1) 45%, transparent 75%); filter: blur(10px);">
           </div>
 
-          <!-- Current hour Laser Telemetry Cursor -->
+          <!-- Grid de 24 horas perfectamente ajustado al 100% del ancho del recuadro (sin scrollbars) -->
+          <div class="grid grid-cols-24 gap-0.5 sm:gap-1 w-full relative py-1 z-10 items-center overflow-hidden"
+            style="display: grid; grid-template-columns: repeat(24, minmax(0, 1fr));" id="timeline-hours-bar">
+            <!-- Dynamically generated 24 hour cells with proximity scaling & light spill -->
+          </div>
+
+          <!-- Marcador de Hora Actual con Rayo Eléctrico Animado en SVG ("RAYITO O LUZ") -->
           <div id="timeline-current-marker"
-            class="absolute top-0 bottom-0 pointer-events-none transition-all duration-1000 hidden z-20"
+            class="absolute top-0 bottom-0 pointer-events-none transition-all duration-700 hidden z-30"
             style="left: 0%;">
-            <div class="w-0.5 h-full bg-cyan-400 shadow-[0_0_12px_#22d3ee]"></div>
+            <!-- Haz de luz ambiental detrás del rayo -->
+            <div class="absolute -left-2 top-0 bottom-0 w-4 bg-cyan-400/20 blur-md"></div>
+
+            <!-- SVG del Rayo Eléctrico Dinámico (Muta sus vértices suavemente) -->
+            <svg class="electric-bolt-svg absolute -left-4 top-0 h-full w-8 overflow-visible pointer-events-none" viewBox="0 0 32 120"
+              preserveAspectRatio="none">
+              <!-- Sombra exterior del rayo -->
+              <path id="lightning-bolt-glow" d="M16 0 L17.5 24 L14.5 50 L18 76 L15 98 L16 120" fill="none" stroke="#06b6d4"
+                stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"
+                style="transition: d 1.4s ease-in-out;" />
+              <!-- Núcleo blanco/cian incandescente del rayo -->
+              <path id="lightning-bolt-core" d="M16 0 L17.5 24 L14.5 50 L18 76 L15 98 L16 120" fill="none" stroke="#ffffff"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                style="transition: d 1.4s ease-in-out;" />
+              <!-- Chispas de energía laterales suaves -->
+              <circle id="spark-1" cx="20" cy="32" r="1.5" fill="#67e8f9" opacity="0.8" />
+              <circle id="spark-2" cx="12" cy="64" r="1.2" fill="#ffffff" opacity="0.9" />
+              <circle id="spark-3" cx="19" cy="88" r="1.5" fill="#34d399" opacity="0.8" />
+            </svg>
+
+            <!-- Badge Superior Electrificado "⚡ AHORA" -->
             <div
-              class="absolute -top-1.5 -translate-x-1/2 px-1.5 py-0.5 bg-cyan-400 text-slate-950 font-extrabold text-[9px] rounded font-mono shadow-[0_0_10px_#22d3ee] flex items-center gap-1">
-              <span>AHORA</span>
+              class="absolute top-0.5 -translate-x-1/2 px-2 py-0.5 bg-gradient-to-r from-cyan-400 via-sky-300 to-emerald-300 text-slate-950 font-extrabold text-[8.5px] sm:text-[9px] rounded-full font-mono shadow-[0_0_12px_#22d3ee] flex items-center gap-0.5 border border-white whitespace-nowrap">
+              <span>⚡ AHORA</span>
+            </div>
+
+            <!-- Punto de impacto inferior del rayo -->
+            <div
+              class="absolute bottom-1 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_10px_#22d3ee] ring-1.5 ring-cyan-400">
             </div>
           </div>
         </div>
@@ -1725,15 +1940,15 @@
         `;
       } else {
         statusTitle.innerHTML = `
-          <span class="kinetic-word inline-block">¡Off-Peak</span>
-          <span class="kinetic-word inline-block">Activo!</span>
-          <span class="kinetic-word inline-block text-emerald-400 text-xl sm:text-2xl font-extrabold font-mono">50% Descuento</span>
+          <span class="kinetic-word inline-block text-white drop-shadow-[0_0_18px_rgba(16,185,129,0.25)]">¡Off-Peak</span>
+          <span class="kinetic-word inline-block text-white drop-shadow-[0_0_18px_rgba(16,185,129,0.25)]">Activo!</span>
+          <span class="kinetic-word inline-block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-300 text-xl sm:text-2xl font-extrabold font-mono">50% Descuento</span>
         `;
       }
 
       gsap.fromTo('#status-title .kinetic-word',
-        { y: 24, opacity: 0, rotateX: -35 },
-        { y: 0, opacity: 1, rotateX: 0, duration: 0.65, stagger: 0.08, ease: 'back.out(1.7)' }
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: 'back.out(1.7)' }
       );
     }
 
@@ -2444,7 +2659,85 @@
       } catch (e) { }
     }
 
-    // Build the 24-Hour Timeline Bar with GSAP Wave Stagger
+    /**
+     * Calcula la hora activa actual (0-23) en la zona horaria seleccionada
+     */
+    function getCurrentHourInTimezone(tz) {
+      const now = new Date();
+      try {
+        const localParts = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz,
+          hour: 'numeric',
+          hour12: false
+        }).formatToParts(now);
+        const h = parseInt(localParts.find(p => p.type === 'hour')?.value || now.getHours(), 10);
+        return h % 24;
+      } catch (e) {
+        return now.getHours();
+      }
+    }
+
+    /**
+     * Aplica luz radial y escalado por proximidad a las celdas de la Línea de Tiempo 24H.
+     * Las celdas más cercanas al rayo (dist 0, 1, 2) brillan más y son más grandes.
+     */
+    let isTimelineHovered = false;
+    let lastTimelineAppliedHour = -1;
+
+    /**
+     * Aplica halo luminoso ambiental distribuido a través de 7 a 9 casillas (no disruptivo).
+     * Mantiene las casillas del mismo tamaño base y sin desenfoques pronunciados.
+     */
+    function applyTimelineProximityEffects(focusHourFloat, isLiveToday = true) {
+      const cells = document.querySelectorAll('#timeline-hours-bar .timeline-hour-cell');
+      if (!cells.length) return;
+
+      cells.forEach((cell, h) => {
+        const isPeak = cell.dataset.peak === 'true';
+
+        if (focusHourFloat === null || focusHourFloat === undefined) {
+          gsap.to(cell, { scale: 1, y: 0, opacity: 0.95, duration: 0.3, ease: 'power2.out' });
+          cell.style.boxShadow = 'none';
+          cell.style.borderColor = isPeak ? 'rgba(244, 63, 94, 0.4)' : 'rgba(16, 185, 129, 0.3)';
+          return;
+        }
+
+        const dist = Math.abs(h - focusHourFloat);
+
+        // Distribución suave y progresiva a lo largo de 7 a 9 casillas (radio de 4 horas a cada lado)
+        // Casillas con tamaño homogéneo (variación máxima muy sutil: 1.04) para encajar 100% en el recuadro
+        if (dist < 0.75) {
+          // Casilla de impacto directo (hora actual o cursor)
+          gsap.to(cell, { scale: 1.04, y: -1.5, opacity: 1, zIndex: 20, duration: 0.25, ease: 'power2.out' });
+          cell.style.boxShadow = isPeak
+            ? '0 0 14px rgba(244, 63, 94, 0.55), inset 0 0 8px rgba(244, 63, 94, 0.3)'
+            : '0 0 14px rgba(34, 211, 238, 0.55), inset 0 0 8px rgba(16, 185, 129, 0.3)';
+          cell.style.borderColor = '#ffffff';
+        } else if (dist <= 1.75) {
+          // Vecinas inmediatas (±1 hora)
+          gsap.to(cell, { scale: 1.03, y: -1, opacity: 0.98, zIndex: 15, duration: 0.25, ease: 'power2.out' });
+          cell.style.boxShadow = '0 0 10px rgba(34, 211, 238, 0.32), inset 0 0 6px rgba(34, 211, 238, 0.15)';
+          cell.style.borderColor = '#22d3ee';
+        } else if (dist <= 2.75) {
+          // Segundas vecinas (±2 horas)
+          gsap.to(cell, { scale: 1.02, y: -0.5, opacity: 0.96, zIndex: 10, duration: 0.25, ease: 'power2.out' });
+          cell.style.boxShadow = '0 0 7px rgba(34, 211, 238, 0.2)';
+          cell.style.borderColor = isPeak ? 'rgba(244, 63, 94, 0.55)' : 'rgba(16, 185, 129, 0.45)';
+        } else if (dist <= 4.0) {
+          // Terceras y cuartas vecinas (±3 y ±4 horas): halo ambiental progresivo
+          gsap.to(cell, { scale: 1.01, y: 0, opacity: 0.94, zIndex: 5, duration: 0.25, ease: 'power2.out' });
+          cell.style.boxShadow = '0 0 4px rgba(34, 211, 238, 0.1)';
+          cell.style.borderColor = isPeak ? 'rgba(244, 63, 94, 0.45)' : 'rgba(16, 185, 129, 0.35)';
+        } else {
+          // Resto de horas: nítidas, legibles y del mismo tamaño uniforme (sin desenfoque excesivo)
+          gsap.to(cell, { scale: 1.0, y: 0, opacity: 0.92, zIndex: 1, duration: 0.25, ease: 'power2.out' });
+          cell.style.boxShadow = 'none';
+          cell.style.borderColor = isPeak ? 'rgba(244, 63, 94, 0.35)' : 'rgba(16, 185, 129, 0.25)';
+        }
+      });
+    }
+
+    // Build the 24-Hour Timeline Bar with Electric Lightning & Proximity Scaling
     function renderTimeline() {
       if (!timelineDate) initTimelineDate();
       const container = document.getElementById('timeline-hours-bar');
@@ -2512,28 +2805,43 @@
         }
 
         const cell = document.createElement('div');
-        cell.className = `timeline-hour-cell h-16 rounded-lg flex flex-col items-center justify-between p-1.5 transition-colors cursor-pointer select-none text-center ${isPeak
-            ? 'bg-rose-500/20 border border-rose-500/50 hover:bg-rose-500/35'
-            : 'bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/30'
+        cell.dataset.hour = h;
+        cell.dataset.peak = isPeak ? 'true' : 'false';
+        cell.className = `timeline-hour-cell relative h-13 sm:h-14 rounded-lg flex flex-col items-center justify-between p-1 sm:p-1.5 cursor-pointer select-none text-center border transition-colors ${isPeak
+            ? 'bg-rose-500/20 border-rose-500/40 text-rose-300'
+            : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
           }`;
 
         cell.title = `${fullDateStr} a las ${pad(h)}:00 - ${isPeak ? 'PEAK (Tarifa Normal)' : 'OFF-PEAK (50% Descuento)'}`;
 
         cell.innerHTML = `
-          <span class="text-[10px] font-mono text-slate-300 font-bold">${pad(h)}h</span>
-          <span class="text-[9px] font-mono font-bold ${isPeak ? 'text-rose-400' : 'text-emerald-400'}">
+          <span class="text-[9px] sm:text-[10px] font-mono text-white font-extrabold tracking-tight">${pad(h)}h</span>
+          <span class="text-[7px] sm:text-[8px] font-mono font-bold leading-none ${isPeak ? 'text-rose-300' : 'text-emerald-300'}">
             ${isPeak ? 'PEAK' : '-50%'}
           </span>
-          <div class="w-full h-1.5 rounded-full ${isPeak ? 'bg-rose-500 shadow-[0_0_6px_#f43f5e]' : 'bg-emerald-500 shadow-[0_0_6px_#10b981]'}"></div>
+          <div class="w-full h-1 rounded-full ${isPeak ? 'bg-rose-500 shadow-[0_0_6px_#f43f5e]' : 'bg-emerald-400 shadow-[0_0_6px_#10b981]'}"></div>
         `;
+
+        // Interacción magnética fluida sin desalinear la cuadrícula
+        cell.addEventListener('mouseenter', () => {
+          isTimelineHovered = true;
+          applyTimelineProximityEffects(h, true);
+          const spotlight = document.getElementById('timeline-spotlight-glow');
+          if (spotlight) {
+            spotlight.classList.remove('hidden');
+            spotlight.style.left = `${((h + 0.5) / 24) * 100}%`;
+          }
+        });
+
         container.appendChild(cell);
       }
 
-      // GSAP Wave Stagger Animation on the 24 cells
-      gsap.fromTo('#timeline-hours-bar .timeline-hour-cell',
-        { y: 16, opacity: 0, scale: 0.9 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.45, stagger: 0.02, ease: 'back.out(1.6)' }
-      );
+      // Al salir el mouse de la barra de 24h, re-sincroniza suavemente con la hora actual
+      container.onmouseleave = () => {
+        isTimelineHovered = false;
+        lastTimelineAppliedHour = -1;
+        updateTimelineMarker(new Date(), getSelectedTimezone(), true);
+      };
 
       // Format peak intervals in local time for text display
       const convText = document.getElementById('timeline-local-conversion-text');
@@ -2561,17 +2869,20 @@
         }
       }
 
-      updateTimelineMarker(new Date(), activeTz);
+      updateTimelineMarker(new Date(), activeTz, true);
       updateTimelineControlsUI();
     }
 
-    // Position the current marker on the 24h bar
-    function updateTimelineMarker(now, activeTz) {
+    // Position the current marker on the 24h bar sin reiniciar ni sacudir las celdas
+    function updateTimelineMarker(now, activeTz, forceRecalculate = false) {
       const marker = document.getElementById('timeline-current-marker');
+      const spotlight = document.getElementById('timeline-spotlight-glow');
       if (!marker) return;
 
       if (!isTimelineDateToday()) {
         marker.classList.add('hidden');
+        if (spotlight) spotlight.classList.add('hidden');
+        applyTimelineProximityEffects(null, false);
         return;
       }
 
@@ -2596,9 +2907,52 @@
 
         marker.style.left = `${percent}%`;
         marker.classList.remove('hidden');
+
+        // Solo actualizar el efecto de iluminación si el usuario no tiene el cursor encima
+        // y únicamente si la hora ha cambiado o se solicita forzarlo
+        if (!isTimelineHovered) {
+          if (spotlight) {
+            spotlight.style.left = `${percent}%`;
+            spotlight.classList.remove('hidden');
+          }
+          if (h !== lastTimelineAppliedHour || forceRecalculate) {
+            lastTimelineAppliedHour = h;
+            applyTimelineProximityEffects(h, true);
+          }
+        }
       } catch (e) {
         marker.classList.add('hidden');
       }
+    }
+
+    /**
+     * Animador en tiempo real del Rayo Eléctrico: cadencia suave y lenta (despacio)
+     */
+    function startElectricLightningLoop() {
+      // Movimiento sereno y de alta fidelidad cada 1.6 segundos con micro-oscilaciones sutiles
+      setInterval(() => {
+        const core = document.getElementById('lightning-bolt-core');
+        const glow = document.getElementById('lightning-bolt-glow');
+        if (!core || !glow) return;
+
+        // Vértices con micro-variaciones elegantes (±1.5px) para evitar saltos violentos
+        const x1 = (16 + (Math.random() - 0.5) * 2.8).toFixed(1);
+        const x2 = (16 + (Math.random() - 0.5) * 3.0).toFixed(1);
+        const x3 = (16 + (Math.random() - 0.5) * 3.0).toFixed(1);
+        const x4 = (16 + (Math.random() - 0.5) * 2.5).toFixed(1);
+        const d = `M 16 0 L ${x1} 24 L ${x2} 50 L ${x3} 76 L ${x4} 98 L 16 120`;
+
+        core.setAttribute('d', d);
+        glow.setAttribute('d', d);
+
+        // Chispas laterales suaves
+        const s1 = document.getElementById('spark-1');
+        const s2 = document.getElementById('spark-2');
+        const s3 = document.getElementById('spark-3');
+        if (s1) { s1.setAttribute('cx', (18 + (Math.random() - 0.5) * 4).toFixed(1)); }
+        if (s2) { s2.setAttribute('cx', (13 + (Math.random() - 0.5) * 4).toFixed(1)); }
+        if (s3) { s3.setAttribute('cx', (18 + (Math.random() - 0.5) * 4).toFixed(1)); }
+      }, 1600);
     }
 
     // Populate Weekly Schedule Table
@@ -2738,104 +3092,216 @@
     }
 
     /**
-     * Quick-selects a model from its pricing card and scrolls smoothly to the calculator
+     * =====================================================================
+     * PLAYGROUND INTERACTIVO DEEPSEEK (CIBER-BALLENA 3D, SONAR Y OVERDRIVE)
+     * Rediseño fiel al logo oficial DeepSeek: cuerpo redondeado, cola curvada,
+     * ojo expresivo con parpadeo, respiración orgánica, chorro de tokens.
+     * =====================================================================
      */
-    function selectModelInCalculator(modelKey) {
-      const select = document.getElementById('calc-model');
-      const section = document.getElementById('calculator-section');
-      if (select) {
-        select.value = modelKey;
-        updateCalculator();
+    let whalePulseCount = 0;
+    let whaleBreathTimeline = null;
+
+    function initDeepSeekWhalePlayground() {
+      const stage = document.getElementById('whale-interactive-stage');
+      const heroGroup = document.getElementById('whale-hero-group');
+      const orbitLayer = document.getElementById('whale-orbit-layer');
+      const coordsLabel = document.getElementById('whale-hud-coords');
+      const shadow = document.getElementById('whale-shadow');
+      const neuralMesh = document.getElementById('whale-neural-mesh');
+
+      if (!stage || !heroGroup) return;
+
+      // === 1. LEVITACIÓN + RESPIRACIÓN ORGÁNICA (Física acuática 3D) ===
+      whaleBreathTimeline = gsap.timeline({ repeat: -1, yoyo: true });
+      whaleBreathTimeline
+        .to(heroGroup, {
+          y: -9,
+          rotation: 1.8,
+          scaleX: 1.016,
+          scaleY: 0.984,
+          duration: 3.0,
+          ease: 'sine.inOut'
+        })
+        .to(shadow, {
+          attr: { rx: 50, ry: 5 },
+          opacity: 0.55,
+          duration: 3.0,
+          ease: 'sine.inOut'
+        }, 0);
+
+      // === 2. PULSACIÓN SUTIL DE LOS NODOS NEURONALES ===
+      if (neuralMesh) {
+        const nodes = neuralMesh.querySelectorAll('circle');
+        nodes.forEach((node, i) => {
+          gsap.to(node, {
+            opacity: 0.25,
+            scale: 0.75,
+            duration: 0.9 + Math.random() * 0.6,
+            repeat: -1,
+            yoyo: true,
+            delay: i * 0.22,
+            ease: 'sine.inOut',
+            transformOrigin: 'center center'
+          });
+        });
       }
-      if (section) {
-        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        gsap.fromTo(section,
-          { boxShadow: '0 0 0px rgba(34, 211, 238, 0)' },
-          { boxShadow: '0 0 40px rgba(34, 211, 238, 0.45)', duration: 0.4, yoyo: true, repeat: 1 }
-        );
-      }
+
+      // === 3. SEGUIMIENTO MAGNÉTICO 3D DEL CURSOR (Ojo DeepSeek 100% anclado e inmutable) ===
+      stage.addEventListener('mousemove', (e) => {
+        const rect = stage.getBoundingClientRect();
+        const relX = e.clientX - rect.left;
+        const relY = e.clientY - rect.top;
+        const normX = (relX / rect.width - 0.5) * 2;
+        const normY = (relY / rect.height - 0.5) * 2;
+
+        if (coordsLabel) {
+          coordsLabel.textContent = `POS // X: ${pad(Math.round(relX))} Y: ${pad(Math.round(relY))}`;
+        }
+
+        // Ballena sigue e inclina suavemente en 3D (el ojo oficial se mantiene perfectamente sólido)
+        gsap.to(heroGroup, {
+          x: normX * 14,
+          y: normY * 10,
+          rotation: normX * 4.5,
+          duration: 0.45,
+          overwrite: 'auto',
+          ease: 'power2.out'
+        });
+
+        // Órbitas se mueven en paralaje inverso de profundidad
+        if (orbitLayer) {
+          gsap.to(orbitLayer, {
+            x: -normX * 10,
+            y: -normY * 6,
+            duration: 0.5,
+            overwrite: 'auto',
+            ease: 'power2.out'
+          });
+        }
+      });
+
+      stage.addEventListener('mouseleave', () => {
+        if (coordsLabel) coordsLabel.textContent = `POS // X: 160 Y: 100 (SYNC)`;
+        gsap.to(heroGroup, { x: 0, y: 0, rotation: 0, duration: 0.7, ease: 'elastic.out(1, 0.5)' });
+        if (orbitLayer) gsap.to(orbitLayer, { x: 0, y: 0, duration: 0.7, ease: 'power2.out' });
+      });
     }
 
-    /**
-     * Narrative Microinteraction: Copies command to clipboard & spawns SVG geometric particles
-     */
-    function copySnippetWithParticles(btnEl, textToCopy) {
-      // Clipboard copy with fallback for iframe environments
-      try {
-        const tempInput = document.createElement('textarea');
-        tempInput.value = textToCopy;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-      } catch (e) { }
-
-      const labelEl = btnEl.querySelector('.copy-status-label');
-      if (labelEl) {
-        labelEl.innerHTML = `<span class="text-emerald-400 font-bold">✓ ¡Copiado!</span>`;
-        setTimeout(() => {
-          labelEl.innerHTML = `<i data-lucide="copy" class="w-3 h-3"></i> Copiar`;
-          lucide.createIcons();
-        }, 1800);
+    function triggerDeepSeekWhalePulse(event, mode = 'pulse') {
+      if (event) event.stopPropagation();
+      whalePulseCount++;
+      const counterEl = document.getElementById('whale-pulse-counter');
+      if (counterEl) {
+        counterEl.textContent = whalePulseCount;
+        gsap.fromTo(counterEl, { scale: 1.5 }, { scale: 1, duration: 0.4, ease: 'back.out(2)' });
       }
 
-      // Spawn SVG Geometric Particle Burst
+      const heroGroup = document.getElementById('whale-hero-group');
+      const sonarGroup = document.getElementById('whale-sonar-rings');
+      const particlesLayer = document.getElementById('whale-particles-layer');
+      const modeLabel = document.getElementById('whale-hud-mode');
+      const statusTag = document.getElementById('whale-status-tag');
       const svgNS = 'http://www.w3.org/2000/svg';
-      const burstSvg = document.createElementNS(svgNS, 'svg');
-      burstSvg.setAttribute('viewBox', '0 0 120 60');
-      burstSvg.setAttribute('class', 'absolute inset-0 w-full h-full pointer-events-none overflow-visible z-30');
-      btnEl.appendChild(burstSvg);
 
-      const colors = ['#22d3ee', '#10b981', '#a855f7', '#f59e0b'];
-      for (let i = 0; i < 12; i++) {
-        const p = document.createElementNS(svgNS, i % 2 === 0 ? 'circle' : 'rect');
-        if (i % 2 === 0) {
-          p.setAttribute('r', '3');
-        } else {
-          p.setAttribute('width', '5');
-          p.setAttribute('height', '5');
-          p.setAttribute('rx', '1');
-        }
-        p.setAttribute('fill', colors[i % colors.length]);
-        burstSvg.appendChild(p);
+      // 1. Modos de Reacción Acrobática y Energía
+      if (mode === 'overdrive') {
+        if (modeLabel) modeLabel.textContent = 'ENGINE // V4.1 OVERDRIVE MAX';
+        if (statusTag) { statusTag.textContent = '⚡ OVERDRIVE ACTIVO'; statusTag.className = 'text-purple-400 font-bold'; }
+        // Giro acrobático 360° fluido con rebote elástico
+        gsap.fromTo(heroGroup,
+          { scale: 0.82, rotation: -18 },
+          { scale: 1, rotation: 360, duration: 1.05, ease: 'back.out(1.5)' }
+        );
+      } else if (mode === 'sonar') {
+        if (modeLabel) modeLabel.textContent = 'ENGINE // DEEP SONAR SCAN';
+        if (statusTag) { statusTag.textContent = '🌊 SONAR ACTIVO'; statusTag.className = 'text-emerald-400 font-bold'; }
+        // Arco de inmersión y emersión ondulante
+        gsap.fromTo(heroGroup,
+          { scale: 1.12, y: -16, rotation: -4 },
+          { scale: 1, y: 0, rotation: 0, duration: 0.9, ease: 'elastic.out(1.15, 0.4)' }
+        );
+      } else {
+        if (modeLabel) modeLabel.textContent = 'ENGINE // NEURAL PULSE SENT';
+        if (statusTag) { statusTag.textContent = '⚡ PULSO EMITIDO'; statusTag.className = 'text-cyan-400 font-bold'; }
+        // Pulso cardiaco / rebote elástico de energía
+        gsap.fromTo(heroGroup,
+          { scale: 0.86 },
+          { scale: 1, duration: 0.85, ease: 'elastic.out(1.2, 0.35)' }
+        );
+      }
 
-        const angle = (i / 12) * Math.PI * 2;
-        const dist = 25 + Math.random() * 25;
-        gsap.fromTo(p,
-          { x: 60, y: 30, scale: 1, opacity: 1 },
-          {
-            x: 60 + Math.cos(angle) * dist,
-            y: 30 + Math.sin(angle) * dist,
-            scale: 0,
-            rotation: 180,
+      // Brillo cuántico sobre el ojo oficial DeepSeek al emitir pulso
+      const eye = document.getElementById('whale-eye');
+      if (eye) {
+        gsap.fromTo(eye,
+          { opacity: 1, filter: 'drop-shadow(0 0 6px #ffffff)' },
+          { filter: 'url(#whaleEyeGlow)', duration: 0.6, ease: 'power2.out' }
+        );
+      }
+
+      // 2. Ondas expansivas de Sonar en SVG concéntricas
+      if (sonarGroup) {
+        const ringCount = mode === 'sonar' ? 4 : 2;
+        const ringColor = mode === 'overdrive' ? '#a855f7' : (mode === 'sonar' ? '#3b82f6' : '#60a5fa');
+        for (let r = 0; r < ringCount; r++) {
+          const ring = document.createElementNS(svgNS, 'circle');
+          ring.setAttribute('cx', '160');
+          ring.setAttribute('cy', '100');
+          ring.setAttribute('r', '26');
+          ring.setAttribute('fill', 'none');
+          ring.setAttribute('stroke', ringColor);
+          ring.setAttribute('stroke-width', '2.4');
+          sonarGroup.appendChild(ring);
+
+          gsap.to(ring, {
+            attr: { r: 155 },
             opacity: 0,
-            duration: 0.7,
+            strokeWidth: 0.3,
+            duration: 1.2,
+            delay: r * 0.18,
             ease: 'power2.out',
             onComplete: () => {
-              if (i === 11 && burstSvg.parentNode) {
-                burstSvg.parentNode.removeChild(burstSvg);
+              if (ring.parentNode) ring.parentNode.removeChild(ring);
+            }
+          });
+        }
+      }
+
+      // 3. Explosión de partículas geométricas estilo DeepSeek (azules, cian y blancas)
+      if (particlesLayer) {
+        const colors = ['#60a5fa', '#3b82f6', '#93c5fd', '#ffffff', '#2563eb'];
+        const pCount = mode === 'overdrive' ? 22 : 14;
+        for (let i = 0; i < pCount; i++) {
+          const p = document.createElementNS(svgNS, i % 3 === 0 ? 'rect' : 'circle');
+          if (i % 3 === 0) {
+            const size = 3 + Math.random() * 4;
+            p.setAttribute('width', String(size));
+            p.setAttribute('height', String(size));
+            p.setAttribute('rx', '1');
+          } else {
+            p.setAttribute('r', String(2 + Math.random() * 2.5));
+          }
+          p.setAttribute('fill', colors[i % colors.length]);
+          particlesLayer.appendChild(p);
+
+          const angle = (i / pCount) * Math.PI * 2 + (Math.random() * 0.4);
+          const dist = 52 + Math.random() * 65;
+          gsap.fromTo(p,
+            { x: 160, y: 100, scale: 1.3, opacity: 1 },
+            {
+              x: 160 + Math.cos(angle) * dist,
+              y: 100 + Math.sin(angle) * dist,
+              scale: 0,
+              rotation: 180 + Math.random() * 120,
+              opacity: 0,
+              duration: 0.75 + Math.random() * 0.4,
+              ease: 'power2.out',
+              onComplete: () => {
+                if (p.parentNode) p.parentNode.removeChild(p);
               }
             }
-          }
-        );
-      }
-    }
-
-    /**
-     * Toggles Blueprint / Vector Inspector Mode
-     */
-    let blueprintActive = false;
-    function toggleBlueprintMode() {
-      blueprintActive = !blueprintActive;
-      document.body.classList.toggle('blueprint-mode', blueprintActive);
-      const dot = document.getElementById('blueprint-dot');
-      const btn = document.getElementById('btn-blueprint-mode');
-      if (blueprintActive) {
-        dot.className = 'w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]';
-        btn.classList.add('border-cyan-400', 'text-cyan-300');
-      } else {
-        dot.className = 'w-2 h-2 rounded-full bg-slate-600';
-        btn.classList.remove('border-cyan-400', 'text-cyan-300');
+          );
+        }
       }
     }
 
@@ -2905,6 +3371,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       initTimelineDate();
       lucide.createIcons();
+      initDeepSeekWhalePlayground();
+      startElectricLightningLoop();
       refreshData(true);
       // Tick every second
       setInterval(() => updateLiveStatus(false), 1000);
