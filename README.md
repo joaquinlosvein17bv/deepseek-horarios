@@ -1,5 +1,9 @@
 # DeepSeek Horarios Peak & Off-Peak Tracker — OpenCode Go
 
+<p align="center">
+  <img src="deepseek-dots.png" alt="DeepSeek Neural Dot Matrix" width="720">
+</p>
+
 > 🌐 **Despliegue en vivo:** [https://deepseek-horarios.vercel.app](https://deepseek-horarios.vercel.app)
 
 Este proyecto proporciona un visualizador interactivo y dashboard web para consultar los horarios de alta demanda (**Peak**) y demanda reducida (**Off-Peak**) de los modelos **DeepSeek** en el servicio **OpenCode Go**.
